@@ -32,6 +32,13 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
             full_path = os.path.join(lfw_path, img_path)
             im = image.load(full_path, rescale_image=False, dtype=dtype)
 
+            # Handle grayscale images which may not have RGB channels
+            if len(im.shape) == 2:
+                W, H = im.shape
+
+                # Repeat image 3 times across axis 2
+                im = im.reshape(W, H, 1).repeat(3, 2)
+
             # Swap color channel to front
             X[i] = im.swapaxes(0, 2)
 

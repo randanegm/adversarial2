@@ -12,15 +12,15 @@ class ConditionalAdversaryPair(AdversaryPair):
 
 
 class ConditionalGenerator(Generator):
-    def __init__(self, condition_space, noise_dim=100, *args, **kwargs):
-        super(Generator, self).__init__(*args, **kwargs)
+    def __init__(self, mlp, condition_space, noise_dim=100, *args, **kwargs):
+        super(ConditionalGenerator, self).__init__(mlp, *args, **kwargs)
 
         self.noise_dim = noise_dim
         self.noise_space = VectorSpace(dim=self.noise_dim)
 
         self.condition_space = condition_space
 
-        self.input_space = CompositeSpace(self.noise_space, self.condition_space)
+        self.input_space = CompositeSpace([self.noise_space, self.condition_space])
         self.mlp.set_input_space(self.input_space)
 
     def get_input_space(self):
@@ -54,26 +54,26 @@ class ConditionalGenerator(Generator):
             Tuple of the form `(sample, noise, other_layers)`.
         """
 
-        num_samples = len(conditional_data)
+        num_samples = conditional_data.shape[0]
 
         noise = self.get_noise((num_samples, self.noise_dim))
         # TODO necessary?
         formatted_noise = self.noise_space.format_as(noise, self.noise_space)
 
         # Build inputs: concatenate noise with conditional data
-        inputs = T.concatenate((noise, conditional_data), axis=1)
+        inputs = (formatted_noise, conditional_data)
 
         # Feedforward
-        if all_g_layers:
-            rval = self.mlp.dropout_fprop(inputs, default_input_include_prob=default_input_include_prob,
-                                          default_input_scale=default_input_scale, return_all=all_g_layers)
-            other_layers, rval = rval[:-1], rval[-1]
-        else:
-            rval = self.mlp.dropout_fprop(inputs, default_input_include_prob=default_input_include_prob,
-                                          default_input_scale=default_input_scale)
-            other_layers = None
+        # if all_g_layers:
+        #     rval = self.mlp.dropout_fprop(inputs, default_input_include_prob=default_input_include_prob,
+        #                                   default_input_scale=default_input_scale, return_all=all_g_layers)
+        #     other_layers, rval = rval[:-1], rval[-1]
+        # else:
+        rval = self.mlp.dropout_fprop(inputs, default_input_include_prob=default_input_include_prob,
+                                      default_input_scale=default_input_scale)
+            # other_layers = None
 
-        return rval, formatted_noise, other_layers
+        return rval, formatted_noise# , other_layers
 
     def sample(self, conditional_data, **kwargs):
         sample, _, _ = self.sample_and_noise(conditional_data, **kwargs)
@@ -105,5 +105,5 @@ class ConditionalDiscriminator(MLP):
         assert 'input_space' not in kwargs
 
         super(ConditionalDiscriminator, self).__init__(
-            input_space=CompositeSpace(input_data_space, input_condition_space),
+            input_space=CompositeSpace([input_data_space, input_condition_space]),
             *args, **kwargs)

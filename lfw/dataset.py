@@ -67,7 +67,7 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
             X = X[rand_idx]
 
         # create view converting for retrieving topological view
-        view_converter = dense_design_matrix.DefaultViewConverter((W, H, C), axes)
+        self.view_converter = dense_design_matrix.DefaultViewConverter((W, H, C), axes)
 
         # init super class
         super(LFW, self).__init__(X=X, y=None, y_labels=None)

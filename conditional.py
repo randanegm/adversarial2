@@ -12,7 +12,7 @@ class ConditionalAdversaryPair(AdversaryPair):
 
 
 class ConditionalGenerator(Generator):
-    def __init__(self, mlp, condition_space, noise_dim=100, *args, **kwargs):
+    def __init__(self, mlp, input_condition_space, noise_dim=100, *args, **kwargs):
         super(ConditionalGenerator, self).__init__(mlp, *args, **kwargs)
 
         self.noise_dim = noise_dim

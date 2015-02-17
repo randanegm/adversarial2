@@ -12,9 +12,8 @@
       num_channels: 3,
       axes: ['c', 0, 1, 'b'],
     },
-    condition_space: &condition_space !obj:pylearn2.space.IndexSpace {
-      max_labels: 10,
-      dim: 1,
+    condition_space: &condition_space !obj:pylearn2.space.VectorSpace {
+      dim: 10,
       dtype: 'uint8'
     },
     generator: !obj:adversarial.Generator {

@@ -7,8 +7,19 @@ from adversarial import AdversaryPair, AdversaryCost2, Generator
 
 
 class ConditionalAdversaryPair(AdversaryPair):
-    def __init__(self, *args, **kwargs):
-        super(ConditionalAdversaryPair, self).__init__(*args, **kwargs)
+    def __init__(self, generator, discriminator, data_space, condition_space,
+                 inferer=None,
+                 inference_monitoring_batch_size=128,
+                 monitor_generator=True,
+                 monitor_discriminator=True,
+                 monitor_inference=True,
+                 shrink_d=0.):
+        super(ConditionalAdversaryPair, self).__init__(generator, discriminator, inferer,
+                                                       inference_monitoring_batch_size, monitor_generator, monitor_discriminator,
+                                                       monitor_inference, shrink_d)
+
+        self.data_space = data_space
+        self.condition_space = condition_space
 
 
 class ConditionalGenerator(Generator):

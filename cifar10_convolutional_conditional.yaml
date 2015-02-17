@@ -122,7 +122,7 @@
         },
 
         # Identity function
-        condition_mlp: !obj.pylearn2.models.mlp.MLP {
+        condition_mlp: !obj:pylearn2.models.mlp.MLP {
           layers: [
             !obj:adversarial.util.IdentityLayer {
               layer_name: 'condition_identity'

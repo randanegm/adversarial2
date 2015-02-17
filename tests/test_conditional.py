@@ -26,7 +26,7 @@ class ConditionalGeneratorTestCase(unittest.TestCase):
 
         # Set up model
         self.mlp = MLP(nvis=self.mlp_nvis, layers=[Linear(self.mlp_nout, 'out', irange=0.1)])
-        self.G = ConditionalGenerator(condition_space=self.condition_space,
+        self.G = ConditionalGenerator(input_condition_space=self.condition_space,
                                       noise_dim=self.noise_dim,
                                       mlp=self.mlp)
 

@@ -18,7 +18,7 @@ class ConditionalGenerator(Generator):
         self.noise_dim = noise_dim
         self.noise_space = VectorSpace(dim=self.noise_dim)
 
-        self.condition_space = condition_space
+        self.condition_space = input_condition_space
 
         self.input_space = CompositeSpace([self.noise_space, self.condition_space])
         self.mlp.set_input_space(self.input_space)

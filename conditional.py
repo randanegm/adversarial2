@@ -86,7 +86,7 @@ class ConditionalGenerator(Generator):
 
 class ConditionalDiscriminator(MLP):
     def __init__(self, data_mlp, condition_mlp, joint_mlp,
-                 input_data_space, input_condition_space, input_sources=('data', 'condition'),
+                 input_data_space, input_condition_space, input_source=('data', 'condition'),
                  *args, **kwargs):
         """
         A discriminator acting within a cGAN which may "condition" on
@@ -119,9 +119,6 @@ class ConditionalDiscriminator(MLP):
         # Make sure user isn't trying to override any fixed keys
         for illegal_key in ['input_source', 'input_space', 'layers']:
             assert illegal_key not in kwargs
-
-        data_mlp.set_input_space(input_data_space)
-        condition_mlp.set_input_space(input_condition_space)
 
         # First feed forward in parallel along the data and condition
         # MLPs; then feed the composite output to the joint MLP

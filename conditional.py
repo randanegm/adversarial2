@@ -3,7 +3,7 @@ from pylearn2.models.mlp import MLP
 from pylearn2.space import CompositeSpace, VectorSpace
 from theano import tensor as T
 
-from adversarial import AdversaryPair, Generator
+from adversarial import AdversaryPair, AdversaryCost2, Generator
 
 
 class ConditionalAdversaryPair(AdversaryPair):
@@ -107,3 +107,20 @@ class ConditionalDiscriminator(MLP):
         super(ConditionalDiscriminator, self).__init__(
             input_space=CompositeSpace([input_data_space, input_condition_space]),
             *args, **kwargs)
+
+
+class ConditionalAdversaryCost(AdversaryCost2):
+    """
+    Defines the cost expression for a cGAN.
+    """
+
+    # We need to see labels for the real-world examples, so that we can
+    # condition the generator + discriminator on them
+    supervised = True
+
+    def __init__(self, **kwargs):
+        super(ConditionalAdversaryCost, self).__init__(**kwargs)
+
+    def get_samples_and_objectives(self, model, data):
+        # TODO
+        print model, data

@@ -21,8 +21,8 @@ class ConditionalAdversaryPair(AdversaryPair):
         self.data_space = data_space
         self.condition_space = condition_space
 
-    def get_output_space(self):
-        return self.discriminator.get_output_space()
+        self.input_source = self.discriminator.get_input_source()
+        self.output_space = self.discriminator.get_output_space()
 
 
 class ConditionalGenerator(Generator):
@@ -36,9 +36,6 @@ class ConditionalGenerator(Generator):
 
         self.input_space = CompositeSpace([self.noise_space, self.condition_space])
         self.mlp.set_input_space(self.input_space)
-
-    def get_input_space(self):
-        return self.input_space
 
     def sample_and_noise(self, conditional_data, default_input_include_prob=1., default_input_scale=1.,
                          all_g_layers=False):

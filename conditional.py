@@ -21,6 +21,9 @@ class ConditionalAdversaryPair(AdversaryPair):
         self.data_space = data_space
         self.condition_space = condition_space
 
+    def get_output_space(self):
+        return self.discriminator.get_output_space()
+
 
 class ConditionalGenerator(Generator):
     def __init__(self, mlp, input_condition_space, noise_dim=100, *args, **kwargs):

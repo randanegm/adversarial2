@@ -57,7 +57,17 @@
         # TODO hack: this lets us keep the 100-dim noise space and have our 10-dim labels too
         # But we should just build the input space automatically / programmatically
         #nvis: 100,
-        nvis: 110,
+#nvis: 110,
+
+        input_space: !obj:pylearn2.space.CompositeSpace {
+          components: [
+            !obj:pylearn2.space.VectorSpace {
+              dim: 100
+            },
+            *condition_space,
+          ]
+        },
+        input_source: ['data', 'condition'],
       },
 
       noise_dim: 100,
@@ -131,6 +141,7 @@
         },
 
         joint_mlp: !obj:pylearn2.models.mlp.MLP {
+          input_source: ['data', 'condition'],
           layers: [
             !obj:pylearn2.models.mlp.Sigmoid {
               #W_lr_scale: .1,

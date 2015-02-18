@@ -20,3 +20,7 @@ class IdentityLayer(Layer):
     @functools.wraps(Layer.fprop)
     def fprop(self, state_below):
         return state_below
+
+    @functools.wraps(Layer.get_params)
+    def get_params(self):
+        return []

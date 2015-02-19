@@ -3,6 +3,7 @@ import functools
 from pylearn2.models.mlp import MLP, CompositeLayer
 from pylearn2.space import CompositeSpace, VectorSpace
 from theano import tensor as T
+from theano.compat import OrderedDict
 from theano.sandbox.rng_mrg import MRG_RandomStreams
 
 from adversarial import AdversaryPair, AdversaryCost2, Generator
@@ -372,3 +373,36 @@ class ConditionalAdversaryCost(AdversaryCost2):
             i_obj = 0
 
         return S, d_obj, g_obj, i_obj
+
+    def get_monitoring_channels(self, model, data, **kwargs):
+        rval = OrderedDict()
+
+        (X_data, X_condition), y = data
+        m = X_data.shape[0]
+
+        G, D = model.generator, model.discriminator
+
+        # Compute false negatives w/ empirical samples
+        y_hat = D.fprop((X_data, X_condition))
+        rval['false_negatives'] = T.cast((y_hat < 0.5).mean(), 'float32')
+
+        # Compute false positives w/ generated sample
+        # TODO should be randomly generated conditional data?
+        samples = G.sample(X_condition)
+        y_hat = d.fprop(samples)
+        rval['false_positives'] = T.cast((y_hat > 0.5).mean(), 'float32')
+
+        # y = T.alloc(0., m, 1)
+        cost = D.cost_from_X(((samples, X_condition), y_hat))
+        sample_grad = T.grad(-cost, samples)
+        rval['sample_grad_norm'] = T.sqrt(T.sqr(sample_grad).sum())
+        _S, d_obj, g_obj, i_obj = self.get_samples_and_objectives(model, data)
+        if model.monitor_inference and i_obj != 0:
+            rval['objective_i'] = i_obj
+        if model.monitor_discriminator:
+            rval['objective_d'] = d_obj
+        if model.monitor_generator:
+            rval['objective_g'] = g_obj
+
+        rval['now_train_generator'] = self.now_train_generator
+        return rval

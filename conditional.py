@@ -1,3 +1,4 @@
+import functools
 
 from pylearn2.models.mlp import MLP, CompositeLayer
 from pylearn2.space import CompositeSpace, VectorSpace
@@ -95,6 +96,50 @@ class ConditionalGenerator(Generator):
         return {}
 
 
+class CompositeMLPLayer(CompositeLayer):
+    """A CompositeLayer where each of the components are MLPs.
+
+    Supports forwarding dropout parameters to each MLP independently."""
+
+    def __init__(self, layers, *args, **kwargs):
+        for layer in layers:
+            assert isinstance(layer, MLP), "CompositeMLPLayer only supports MLP component layers"
+
+        super(CompositeMLPLayer, self).__init__(layers=layers, *args, **kwargs)
+
+    def validate_layer_names(self, req_names):
+        all_names = []
+        for mlp_layer in self.layers:
+            all_names.extend(mlp_layer.layers)
+
+        if any(req_name not in all_names for req_name in req_names):
+            unknown_names = [req_name for req_name in req_names
+                             if req_name not in all_names]
+            raise ValueError("No MLPs in this CompositeMLPLayer have layer(s) named %s" %
+                             ", ".join(unknown_names))
+
+    def dropout_fprop(self, state_below, *args, **kwargs):
+        """Extension of Layer#fprop which forwards on dropout parameters
+        to MLP sub-layers."""
+
+        rvals = []
+        for i, mlp in enumerate(self.layers):
+            if self.routing_needed and i in self.layers_to_inputs:
+                cur_state_below = [state_below[j]
+                                   for j in self.layers_to_inputs[i]]
+                # This is to mimic the behavior of CompositeSpace's restrict
+                # method, which only returns a CompositeSpace when the number
+                # of components is greater than 1
+                if len(cur_state_below) == 1:
+                    cur_state_below, = cur_state_below
+            else:
+                cur_state_below = state_below
+
+            rvals.append(mlp.dropout_fprop(cur_state_below, *args, **kwargs))
+
+        return tuple(rvals)
+
+
 class ConditionalDiscriminator(MLP):
     def __init__(self, data_mlp, condition_mlp, joint_mlp,
                  input_data_space, input_condition_space, input_source=('data', 'condition'),
@@ -134,9 +179,9 @@ class ConditionalDiscriminator(MLP):
         # First feed forward in parallel along the data and condition
         # MLPs; then feed the composite output to the joint MLP
         layers = [
-            CompositeLayer(layer_name='discriminator_composite',
-                           layers=[data_mlp, condition_mlp],
-                           inputs_to_layers={0: [0], 1: [1]}),
+            CompositeMLPLayer(layer_name='discriminator_composite',
+                              layers=[data_mlp, condition_mlp],
+                              inputs_to_layers={0: [0], 1: [1]}),
             joint_mlp
         ]
 
@@ -145,6 +190,73 @@ class ConditionalDiscriminator(MLP):
             input_space=CompositeSpace([input_data_space, input_condition_space]),
             input_source=input_source,
             *args, **kwargs)
+
+    @functools.wraps(MLP.dropout_fprop)
+    def dropout_fprop(self, state_below, default_input_include_prob=0.5,
+                      input_include_probs=None, default_input_scale=2.,
+                      input_scales=None, per_example=True):
+        """Extended version of MLP#dropout_fprop which supports passing
+        on dropout parameters to nested MLPs within this MLP.
+
+        Coupled with `CompositeMLPLayer`, which is a core part of the
+        ConditionalDiscriminator setup.
+        """
+
+        if input_include_probs is None:
+            input_include_probs = {}
+        if input_scales is None:
+            input_scales = {}
+
+        layer_name_set = set(input_include_probs.keys())
+        layer_name_set.update(input_scales.keys())
+
+        # Remove layers from the outer net
+        layer_name_set.remove(set(layer.layer_name for layer in self.layers))
+
+        # Make sure remaining layers are contained within sub-MLPs
+        # NOTE: Assumes composite layer is only at position zero
+        self.layers[0].validate_layer_names(list(input_include_probs.keys()))
+        self.layers[0].validate_layer_names(list(input_scales.keys()))
+
+        theano_rng = MRG_RandomStreams(max(self.rng.randint(2 ** 15), 1))
+
+        for layer in self.layrers:
+            layer_name = layer.layer_name
+
+            if layer_name in input_include_probs:
+                include_prob = input_include_probs[layer_name]
+            else:
+                include_prob = default_input_include_prob
+
+            if layer_name in input_scales:
+                scale = input_scales[layer_name]
+            else:
+                scale = default_input_scale
+
+            # Forward propagate
+            if isinstance(layer, CompositeMLPLayer):
+                # This is a composite MLP layer -- forward on the
+                # dropout parameters
+                state_below = layer.dropout_fprop(state_below,
+                                                  default_input_include_prob=default_input_include_prob,
+                                                  input_include_probs=input_include_probs,
+                                                  default_input_scale=default_input_scale,
+                                                  input_scales=input_scales,
+                                                  per_example=per_example)
+            else:
+                state_below = self.apply_dropout(
+                    state=state_below,
+                    include_prob=include_prob,
+                    theano_rng=theano_rng,
+                    scale=scale,
+                    mask_value=layer.dropout_input_mask_value,
+                    input_space=layer.get_input_space(),
+                    per_example=per_example
+                )
+
+                state_below = layer.fprop(state_below)
+
+        return state_below
 
 
 class ConditionalAdversaryCost(AdversaryCost2):

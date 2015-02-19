@@ -3,6 +3,7 @@ import functools
 from pylearn2.models.mlp import MLP, CompositeLayer
 from pylearn2.space import CompositeSpace, VectorSpace
 from theano import tensor as T
+from theano.sandbox.rng_mrg import MRG_RandomStreams
 
 from adversarial import AdversaryPair, AdversaryCost2, Generator
 
@@ -107,10 +108,16 @@ class CompositeMLPLayer(CompositeLayer):
 
         super(CompositeMLPLayer, self).__init__(layers=layers, *args, **kwargs)
 
+    def _collect_mlp_layer_names(self):
+        """Collect the layer names of the MLPs nested within this
+        layer."""
+
+        return [[sub_layer.layer_name for sub_layer in mlp.layers] for mlp in self.layers]
+
     def validate_layer_names(self, req_names):
         all_names = []
-        for mlp_layer in self.layers:
-            all_names.extend([sub_layer.layer_name for sub_layer in mlp_layer.layers])
+        for sub_names in self._collect_mlp_layer_names():
+            all_names.extend(sub_names)
 
         if any(req_name not in all_names for req_name in req_names):
             unknown_names = [req_name for req_name in req_names
@@ -118,9 +125,18 @@ class CompositeMLPLayer(CompositeLayer):
             raise ValueError("No MLPs in this CompositeMLPLayer have layer(s) named %s" %
                              ", ".join(unknown_names))
 
-    def dropout_fprop(self, state_below, *args, **kwargs):
+    def dropout_fprop(self, state_below, input_include_probs=None, input_scales=None,
+                      *args, **kwargs):
         """Extension of Layer#fprop which forwards on dropout parameters
         to MLP sub-layers."""
+
+        if input_include_probs is None:
+            input_include_probs = {}
+        if input_scales is None:
+            input_scales = {}
+
+        # Use to determine which args should be routed to which places
+        mlp_layer_names = self._collect_mlp_layer_names()
 
         rvals = []
         for i, mlp in enumerate(self.layers):
@@ -135,7 +151,17 @@ class CompositeMLPLayer(CompositeLayer):
             else:
                 cur_state_below = state_below
 
-            rvals.append(mlp.dropout_fprop(cur_state_below, *args, **kwargs))
+            # Get dropout params for relevant layers
+            relevant_keys_include = set(mlp_layer_names[i]) & set(input_include_probs)
+            relevant_keys_scale = set(mlp_layer_names[i]) & set(input_scales)
+
+            relevant_include = dict((k, input_include_probs[k]) for k in relevant_keys_include)
+            relevant_scale = dict((k, input_scales[k]) for k in relevant_keys_scale)
+
+            rvals.append(mlp.dropout_fprop(cur_state_below,
+                                           input_include_probs=relevant_include,
+                                           input_scales=relevant_scale,
+                                           *args, **kwargs))
 
         return tuple(rvals)
 
@@ -220,7 +246,7 @@ class ConditionalDiscriminator(MLP):
 
         theano_rng = MRG_RandomStreams(max(self.rng.randint(2 ** 15), 1))
 
-        for layer in self.layrers:
+        for layer in self.layers:
             layer_name = layer.layer_name
 
             if layer_name in input_include_probs:
@@ -310,7 +336,7 @@ class ConditionalAdversaryCost(AdversaryCost2):
                       self.discriminator_input_scales]
 
         # Run discriminator on empirical data (1 expected)
-        y_hat1 = D.dropout_fprop(X_data, *fprop_args)
+        y_hat1 = D.dropout_fprop((X_data, X_condition), *fprop_args)
 
         # Run discriminator on generated data (0 expected)
         y_hat0 = D.dropout_fprop(S, *fprop_args)

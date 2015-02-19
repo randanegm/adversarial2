@@ -389,7 +389,7 @@ class ConditionalAdversaryCost(AdversaryCost2):
         # Compute false positives w/ generated sample
         # TODO should be randomly generated conditional data?
         samples = G.sample(X_condition)
-        y_hat = d.fprop(samples)
+        y_hat = D.fprop((samples, X_condition))
         rval['false_positives'] = T.cast((y_hat > 0.5).mean(), 'float32')
 
         # y = T.alloc(0., m, 1)

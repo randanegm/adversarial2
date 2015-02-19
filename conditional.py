@@ -110,7 +110,7 @@ class CompositeMLPLayer(CompositeLayer):
     def validate_layer_names(self, req_names):
         all_names = []
         for mlp_layer in self.layers:
-            all_names.extend(mlp_layer.layers)
+            all_names.extend([sub_layer.layer_name for sub_layer in mlp_layer.layers])
 
         if any(req_name not in all_names for req_name in req_names):
             unknown_names = [req_name for req_name in req_names
@@ -211,7 +211,7 @@ class ConditionalDiscriminator(MLP):
         layer_name_set.update(input_scales.keys())
 
         # Remove layers from the outer net
-        layer_name_set.remove(set(layer.layer_name for layer in self.layers))
+        layer_name_set.difference_update(set(layer.layer_name for layer in self.layers))
 
         # Make sure remaining layers are contained within sub-MLPs
         # NOTE: Assumes composite layer is only at position zero

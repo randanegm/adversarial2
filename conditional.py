@@ -84,7 +84,7 @@ class ConditionalGenerator(Generator):
                                       default_input_scale=default_input_scale)
             # other_layers = None
 
-        return rval, formatted_noise# , other_layers
+        return rval, formatted_noise, None# , other_layers
 
     def sample(self, conditional_data, **kwargs):
         sample, _, _ = self.sample_and_noise(conditional_data, **kwargs)
@@ -175,14 +175,14 @@ class ConditionalAdversaryCost(AdversaryCost2):
         # TODO something wrong here -- where does X_condition come from
         # on this invocation?
         (X_data, X_condition), y = data
-        m = data.shape[space.get_batch_axis()]
+        m = X_data.shape[space.get_batch_axis()]
 
         # Expected discriminator output: 1 for real data, 0 for
         # generated samples
         y1 = T.alloc(1, m, 1)
         y0 = T.alloc(0, m, 1)
 
-        S, z, other_layers = g.sample_and_noise(X_condition,
+        S, z, other_layers = G.sample_and_noise(X_condition,
                                                 default_input_include_prob=self.generator_default_input_include_prob,
                                                 default_input_scale=self.generator_default_input_scale,
                                                 all_g_layers=(self.infer_layer is not None))

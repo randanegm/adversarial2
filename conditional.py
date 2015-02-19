@@ -320,6 +320,8 @@ class ConditionalAdversaryCost(AdversaryCost2):
         y1 = T.alloc(1, m, 1)
         y0 = T.alloc(0, m, 1)
 
+        # TODO shouldn't we just provide random conditions? Not the
+        # same ones as the empirical sample?
         S, z, other_layers = G.sample_and_noise(X_condition,
                                                 default_input_include_prob=self.generator_default_input_include_prob,
                                                 default_input_scale=self.generator_default_input_scale,
@@ -339,17 +341,17 @@ class ConditionalAdversaryCost(AdversaryCost2):
         y_hat1 = D.dropout_fprop((X_data, X_condition), *fprop_args)
 
         # Run discriminator on generated data (0 expected)
-        y_hat0 = D.dropout_fprop(S, *fprop_args)
+        y_hat0 = D.dropout_fprop((S, X_condition), *fprop_args)
 
         # Compute discriminator objective
-        d_obj = 0.5 * (D.layers[-1].cost(y1, y_hat1) + d.layers[-1].cost(y0, y_hat0))
+        d_obj = 0.5 * (D.layers[-1].cost(y1, y_hat1) + D.layers[-1].cost(y0, y_hat0))
 
         # Compute generator objective
         if self.no_drop_in_d_for_g:
             y_hat0_no_drop = D.dropout_fprop(S)
-            g_obj = d.layers[-1].cost(y1, y_hat0_no_drop)
+            g_obj = D.layers[-1].cost(y1, y_hat0_no_drop)
         else:
-            g_obj = d.layers[-1].cost(y1, y_hat0)
+            g_obj = D.layers[-1].cost(y1, y_hat0)
 
         if self.blend_obj:
             g_obj = (self.zurich_coeff * g_obj - self.minimax_coeff * d_obj) / (self.zurich_coeff + self.minimax_coeff)

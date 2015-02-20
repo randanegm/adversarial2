@@ -1,5 +1,5 @@
 !obj:pylearn2.train.Train {
-  dataset: &train !obj:pylearn2.datasets.cifar10.CIFAR10 {
+  dataset: &train !obj:adversarial.datasets.CIFAR10OneHot {
     axes: ['c', 0, 1, 'b'],
     gcn: 55.,
     which_set: 'train',
@@ -173,7 +173,7 @@
     },
     monitoring_dataset: {
       #'train' : *train,
-      'valid' : !obj:pylearn2.datasets.cifar10.CIFAR10 {
+      'valid' : !obj:adversarial.datasets.CIFAR10OneHot {
         axes: ['c', 0, 1, 'b'],
         gcn: 55.,
         which_set: 'train',

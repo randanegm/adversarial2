@@ -70,7 +70,8 @@
             *condition_space,
           ]
         },
-        input_source: ['data', 'condition'],
+#       input_source: ['data', 'condition'],
+        input_source: ['features', 'targets'],
       },
 
       noise_dim: 100,
@@ -147,7 +148,7 @@
 
         joint_mlp: !obj:pylearn2.models.mlp.MLP {
           layer_name: 'joint_mlp',
-          input_source: ['data', 'condition'],
+#         input_source: ['data', 'condition'],
           layers: [
             !obj:pylearn2.models.mlp.Sigmoid {
               #W_lr_scale: .1,

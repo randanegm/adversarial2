@@ -76,6 +76,7 @@
     discriminator:
       !obj:adversarial.conditional.ConditionalDiscriminator {
         data_mlp: !obj:pylearn2.models.mlp.MLP {
+          layer_name: 'data_mlp',
           layers: [
             !obj:pylearn2.models.maxout.MaxoutConvC01B {
               layer_name: 'dh0',
@@ -133,6 +134,7 @@
 
         # Identity function
         condition_mlp: !obj:pylearn2.models.mlp.MLP {
+          layer_name: 'condition_mlp',
           layers: [
             !obj:adversarial.util.IdentityLayer {
               layer_name: 'condition_identity'
@@ -141,6 +143,7 @@
         },
 
         joint_mlp: !obj:pylearn2.models.mlp.MLP {
+          layer_name: 'joint_mlp',
           input_source: ['data', 'condition'],
           layers: [
             !obj:pylearn2.models.mlp.Sigmoid {

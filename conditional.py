@@ -27,6 +27,34 @@ class ConditionalAdversaryPair(AdversaryPair):
         self.input_source = self.discriminator.get_input_source()
         self.output_space = self.discriminator.get_output_space()
 
+    def get_monitoring_channels(self, data):
+        rval = OrderedDict()
+
+        g_ch = self.generator.get_monitoring_channels(data)
+        d_ch = self.discriminator.get_monitoring_channels((data, None))
+
+        samples, _, conditional_data, _ = self.generator.sample_and_noise(100)
+        d_samp_ch = self.discriminator.get_monitoring_channels(((samples, conditional_data), None))
+
+        i_ch = OrderedDict()
+        if self.inferer is not None:
+            batch_size = self.inference_monitoring_batch_size
+            sample, noise, conditional_data, _ = self.generator.sample_and_noise(batch_size)
+            i_ch.update(self.inferer.get_monitoring_channels(((sample, conditional_data), noise)))
+
+        if self.monitor_generator:
+            for key in g_ch:
+                rval['gen_' + key] = g_ch[key]
+        if self.monitor_discriminator:
+            for key in d_ch:
+                rval['dis_on_data_' + key] = d_samp_ch[key]
+            for key in d_ch:
+                rval['dis_on_samp_' + key] = d_ch[key]
+        if self.monitor_inference:
+            for key in i_ch:
+                rval['inf_' + key] = i_ch[key]
+        return rval
+
 
 class ConditionalGenerator(Generator):
     def __init__(self, mlp, input_condition_space, condition_distribution, noise_dim=100, *args, **kwargs):
@@ -91,10 +119,10 @@ class ConditionalGenerator(Generator):
                                       default_input_scale=default_input_scale)
             # other_layers = None
 
-        return rval, formatted_noise, None# , other_layers
+        return rval, formatted_noise, conditional_data, None# , other_layers
 
     def sample(self, conditional_data, **kwargs):
-        sample, _, _ = self.sample_and_noise(conditional_data, **kwargs)
+        sample, _, _, _ = self.sample_and_noise(conditional_data, **kwargs)
         return sample
 
     def get_monitoring_channels(self, data):
@@ -327,10 +355,10 @@ class ConditionalAdversaryCost(AdversaryCost2):
 
         # TODO shouldn't we just provide random conditions? Not the
         # same ones as the empirical sample?
-        S, z, other_layers = G.sample_and_noise(X_condition,
-                                                default_input_include_prob=self.generator_default_input_include_prob,
-                                                default_input_scale=self.generator_default_input_scale,
-                                                all_g_layers=(self.infer_layer is not None))
+        S, z, _, other_layers = G.sample_and_noise(X_condition,
+                                                   default_input_include_prob=self.generator_default_input_include_prob,
+                                                   default_input_scale=self.generator_default_input_scale,
+                                                   all_g_layers=(self.infer_layer is not None))
 
         if self.noise_both != 0.:
             rng = MRG_RandomStreams(2014 / 6 + 2)

@@ -17,6 +17,9 @@
       dtype: 'uint8'
     },
     generator: !obj:adversarial.conditional.ConditionalGenerator {
+      condition_distribution: !obj:adversarial.distributions.OneHotDistribution {
+        space: *condition_space,
+      },
       mlp: !obj:pylearn2.models.mlp.MLP {
         layers: [
           !obj:pylearn2.models.mlp.RectifiedLinear {

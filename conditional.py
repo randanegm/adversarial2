@@ -29,13 +29,14 @@ class ConditionalAdversaryPair(AdversaryPair):
 
 
 class ConditionalGenerator(Generator):
-    def __init__(self, mlp, input_condition_space, noise_dim=100, *args, **kwargs):
+    def __init__(self, mlp, input_condition_space, condition_distribution, noise_dim=100, *args, **kwargs):
         super(ConditionalGenerator, self).__init__(mlp, *args, **kwargs)
 
         self.noise_dim = noise_dim
         self.noise_space = VectorSpace(dim=self.noise_dim)
 
         self.condition_space = input_condition_space
+        self.condition_distribution = condition_distribution
 
         self.input_space = CompositeSpace([self.noise_space, self.condition_space])
         self.mlp.set_input_space(self.input_space)
@@ -67,6 +68,9 @@ class ConditionalGenerator(Generator):
         net_output: 3-tuple
             Tuple of the form `(sample, noise, other_layers)`.
         """
+
+        if isinstance(conditional_data, int):
+            conditional_data = self.condition_distribution.sample(conditional_data)
 
         num_samples = conditional_data.shape[0]
 

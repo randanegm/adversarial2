@@ -1,5 +1,6 @@
 
 from pylearn2.datasets.cifar10 import CIFAR10
+from pylearn2.datasets.dense_design_matrix import DenseDesignMatrix
 from pylearn2.format.target_format import OneHotFormatter
 
 
@@ -8,7 +9,10 @@ class CIFAR10OneHot(CIFAR10):
                  center=False, rescale=False, gcn=None,
                  start=None, stop=None, axes=('b', 0, 1, 'c'),
                  toronto_prepro = False, preprocessor = None):
-        super(CIFAR10OneHot, self).__init__(*args, **kwargs)
+        super(CIFAR10OneHot, self).__init__(which_set, center=center, rescale=rescale,
+                                            gcn=gcn, start=start, stop=stop, axes=axes,
+                                            toronto_prepro=toronto_prepro,
+                                            preprocessor=preprocessor)
 
         # OK, mess with the target "Y" matrix and then re-init
         #
@@ -20,5 +24,5 @@ class CIFAR10OneHot(CIFAR10):
         y = formatter.format(y, mode='concatenate')
 
         # So hacky. I am sorry, Guido..
-        kwargs['y'] = y
-        super(CIFAR10OneHot, self).__init__(*args, **kwargs)
+        DenseDesignMatrix.__init__(self, X=self.X, y=y, view_converter=self.view_converter,
+                                   y_labels=self.y_labels)

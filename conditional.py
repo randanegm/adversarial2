@@ -201,7 +201,7 @@ class CompositeMLPLayer(CompositeLayer):
 
 class ConditionalDiscriminator(MLP):
     def __init__(self, data_mlp, condition_mlp, joint_mlp,
-                 input_data_space, input_condition_space, input_source=('features', 'targets'),
+                 input_data_space, input_condition_space, input_source=('features', 'condition'),
                  *args, **kwargs):
         """
         A discriminator acting within a cGAN which may "condition" on

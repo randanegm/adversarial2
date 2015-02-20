@@ -25,4 +25,8 @@ class CIFAR10OneHot(CIFAR10):
 
         # So hacky. I am sorry, Guido..
         DenseDesignMatrix.__init__(self, X=self.X, y=y, view_converter=self.view_converter,
-                                   y_labels=self.y_labels)
+                                   y_labels=None)
+
+        # Another hack: rename 'targets' to match model expectations
+        space, (X_source, y_source) = self.data_specs
+        self.data_specs = (space, (X_source, 'condition'))

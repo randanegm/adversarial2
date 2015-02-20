@@ -323,9 +323,7 @@ class ConditionalAdversaryCost(AdversaryCost2):
     Defines the cost expression for a cGAN.
     """
 
-    # We need to see labels for the real-world examples, so that we can
-    # condition the generator + discriminator on them
-    supervised = True
+    supervised = False
 
     def __init__(self, **kwargs):
         super(ConditionalAdversaryCost, self).__init__(**kwargs)
@@ -342,11 +340,9 @@ class ConditionalAdversaryCost(AdversaryCost2):
         # discriminator as well.
         #
         # X_condition: Conditional data for each empirical sample.
-        #
-        # TODO something wrong here -- where does X_condition come from
-        # on this invocation?
-        (X_data, X_condition), y = data
-        m = X_data.shape[space.get_batch_axis()]
+        X_data, X_condition = data
+        m = X_data.shape[3]
+        # TODO get_batch_axis is wrong here.. probably a dataset issue?
 
         # Expected discriminator output: 1 for real data, 0 for
         # generated samples
@@ -409,8 +405,9 @@ class ConditionalAdversaryCost(AdversaryCost2):
     def get_monitoring_channels(self, model, data, **kwargs):
         rval = OrderedDict()
 
-        (X_data, X_condition), y = data
-        m = X_data.shape[0]
+        space, sources = self.get_data_specs(model)
+        X_data, X_condition = data
+        m = X_data.shape[space.get_batch_axis()]
 
         G, D = model.generator, model.discriminator
 

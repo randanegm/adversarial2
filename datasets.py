@@ -11,6 +11,9 @@ from pylearn2.format.target_format import OneHotFormatter
 from pylearn2.utils import contains_nan, serial, string_utils
 
 
+_logger = logging.getLogger(__name__)
+
+
 class CIFAR10OneHot(CIFAR10):
     def __init__(self, which_set, onehot_dtype='uint8',
                  center=False, rescale=False, gcn=None,

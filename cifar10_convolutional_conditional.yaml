@@ -17,7 +17,7 @@
       dtype: 'uint8'
     },
     generator: !obj:adversarial.conditional.ConditionalGenerator {
-      condition_distribution: !obj:adversarial.distributions.OneHotDistribution {
+      condition_distribution: &condition_distribution !obj:adversarial.distributions.OneHotDistribution {
         space: *condition_space,
       },
       mlp: !obj:pylearn2.models.mlp.MLP {
@@ -167,7 +167,7 @@
   },
   algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
     batch_size: 128,
-    learning_rate: .004,
+    learning_rate: .001, # 0.004
     learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
       init_momentum: .5,
     },
@@ -186,6 +186,7 @@
       #          }
     },
     cost: !obj:adversarial.conditional.ConditionalAdversaryCost {
+      condition_distribution: *condition_distribution,
       scale_grads: 0,
       #target_scale: .1,
       discriminator_default_input_include_prob: .5,

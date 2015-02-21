@@ -2,11 +2,12 @@ import functools
 
 from pylearn2.models.mlp import MLP, CompositeLayer
 from pylearn2.space import CompositeSpace, VectorSpace
+import theano
 from theano import tensor as T
 from theano.compat import OrderedDict
 from theano.sandbox.rng_mrg import MRG_RandomStreams
 
-from adversarial import AdversaryPair, AdversaryCost2, Generator
+from adversarial import AdversaryPair, AdversaryCost2, Generator, theano_parzen
 
 
 class ConditionalAdversaryPair(AdversaryPair):

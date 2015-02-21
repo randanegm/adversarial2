@@ -1,7 +1,14 @@
+import os
+import logging
 
+import numpy
+from theano.compat.six.moves import xrange
+
+from pylearn2.datasets import cache, dense_design_matrix
 from pylearn2.datasets.cifar10 import CIFAR10
-from pylearn2.datasets.dense_design_matrix import DenseDesignMatrix
+from pylearn2.expr.preprocessing import global_contrast_normalize
 from pylearn2.format.target_format import OneHotFormatter
+from pylearn2.utils import contains_nan, serial, string_utils
 
 
 class CIFAR10OneHot(CIFAR10):

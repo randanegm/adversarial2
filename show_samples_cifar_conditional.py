@@ -6,6 +6,7 @@ space = model.generator.get_output_space()
 from pylearn2.config import yaml_parse
 from pylearn2.format.target_format import OneHotFormatter
 from pylearn2.gui.patch_viewer import PatchViewer
+import theano
 import numpy as np
 
 dataset = yaml_parse.load(model.dataset_yaml_src)
@@ -19,13 +20,20 @@ rows = model.generator.condition_space.get_total_dimension()
 sample_cols = 5
 
 # Generate conditional information
+conditional_batch = model.generator.condition_space.make_theano_batch()
 formatter = OneHotFormatter(rows,
                             dtype=model.generator.condition_space.dtype)
-conditional = formatter.format(np.concatenate([np.repeat(i, sample_cols) for i in range(rows)]),
-                               mode='concatenate')
+conditional = formatter.theano_expr(conditional_batch, mode='concatenate')
 
+# Now sample from generator
 # For some reason format_as from VectorSpace is not working right
-topo_samples = model.generator.sample(conditional).eval()
+topo_samples_batch = model.generator.sample(conditional)
+topo_sample_f = theano.function([conditional], topo_samples_batch)
+conditional_data = formatter.format(np.concatenate([np.repeat(i, sample_cols) for i in range(rows)])
+                                      .reshape((rows * sample_cols, 1)),
+                                    mode='concatenate')
+topo_samples = topo_sample_f(conditional_data)
+
 samples = dataset.get_design_matrix(topo_samples)
 dataset.axes = ['b', 0, 1, 'c']
 dataset.view_converter.axes = ['b', 0, 1, 'c']

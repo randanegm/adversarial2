@@ -94,7 +94,7 @@ class CIFAR10OneHot(CIFAR10):
             assert y.shape[0] == 10000
             y = y.reshape((y.shape[0], 1))
 
-        formatter = OneHotFormatter(self.y_labels, dtype=onehot_dtype)
+        formatter = OneHotFormatter(self.n_classes, dtype=onehot_dtype)
         y = formatter.format(y, mode='concatenate')
 
         if center:

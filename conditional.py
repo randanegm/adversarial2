@@ -126,8 +126,43 @@ class ConditionalGenerator(Generator):
         return sample
 
     def get_monitoring_channels(self, data):
-        # TODO
-        return {}
+        # DEBUG
+        print data, type(data)
+
+        if data is None:
+            m = 100
+            conditional_data = self.condition_distribution.sample(m)
+
+        n = self.mlp.get_input_space().get_total_dimension()
+        noise = self.get_noise((m, n))
+        rval = OrderedDict()
+
+        data = (noise, conditional_data)
+
+        try:
+            rval.update(self.mlp.get_monitoring_channels((data, None)))
+        except Exception:
+            warnings.warn("something went wrong with generator.mlp's monitoring channels")
+
+        if  self.monitor_ll:
+            rval['ll'] = T.cast(self.ll(data, self.ll_n_samples, self.ll_sigma),
+                                        theano.config.floatX).mean()
+            rval['nll'] = -rval['ll']
+        return rval
+
+    def ll(self, data, n_samples, sigma):
+        # TODO finish
+        noise, conditional_data = data
+        samples = self.sample(conditional_data)
+
+        output_space = self.mlp.get_output_space()
+        if 'Conv2D' in str(output_space):
+            samples = output_space.convert(samples, output_space.axes, ('b', 0, 1, 'c'))
+            samples = samples.flatten(2)
+            data = output_space.convert(data, output_space.axes, ('b', 0, 1, 'c'))
+            data = data.flatten(2)
+        parzen = theano_parzen(data, samples, sigma)
+        return parzen
 
 
 class CompositeMLPLayer(CompositeLayer):

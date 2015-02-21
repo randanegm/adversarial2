@@ -133,8 +133,7 @@ class ConditionalGenerator(Generator):
             _, conditional_data = data
             m = conditional_data.shape[0]
 
-        n = self.mlp.get_input_space().get_total_dimension()
-        noise = self.get_noise((m, n))
+        noise = self.get_noise((m, self.noise_dim))
         rval = OrderedDict()
 
         sampled_data = (noise, conditional_data)

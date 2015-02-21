@@ -357,7 +357,9 @@ class ConditionalAdversaryCost(AdversaryCost2):
 
     supervised = False
 
-    def __init__(self, **kwargs):
+    def __init__(self, condition_distribution, **kwargs):
+        self.condition_distribution = condition_distribution
+
         super(ConditionalAdversaryCost, self).__init__(**kwargs)
 
     def get_samples_and_objectives(self, model, data):
@@ -381,9 +383,9 @@ class ConditionalAdversaryCost(AdversaryCost2):
         y1 = T.alloc(1, m, 1)
         y0 = T.alloc(0, m, 1)
 
-        # TODO shouldn't we just provide random conditions? Not the
-        # same ones as the empirical sample?
-        S, z, _, other_layers = G.sample_and_noise(X_condition,
+        # Generate conditional data for the generator
+        G_conditional_data = self.condition_distribution.sample(m)
+        S, z, _, other_layers = G.sample_and_noise(G_conditional_data,
                                                    default_input_include_prob=self.generator_default_input_include_prob,
                                                    default_input_scale=self.generator_default_input_scale,
                                                    all_g_layers=(self.infer_layer is not None))
@@ -402,7 +404,7 @@ class ConditionalAdversaryCost(AdversaryCost2):
         y_hat1 = D.dropout_fprop((X_data, X_condition), *fprop_args)
 
         # Run discriminator on generated data (0 expected)
-        y_hat0 = D.dropout_fprop((S, X_condition), *fprop_args)
+        y_hat0 = D.dropout_fprop((S, G_conditional_data), *fprop_args)
 
         # Compute discriminator objective
         d_obj = 0.5 * (D.layers[-1].cost(y1, y_hat1) + D.layers[-1].cost(y0, y_hat0))
@@ -448,15 +450,16 @@ class ConditionalAdversaryCost(AdversaryCost2):
         rval['false_negatives'] = T.cast((y_hat < 0.5).mean(), 'float32')
 
         # Compute false positives w/ generated sample
-        # TODO should be randomly generated conditional data?
-        samples = G.sample(X_condition)
-        y_hat = D.fprop((samples, X_condition))
+        G_conditional_data = self.condition_distribution.sample(m)
+        samples = G.sample(G_conditional_data)
+        y_hat = D.fprop((samples, G_conditional_data))
         rval['false_positives'] = T.cast((y_hat > 0.5).mean(), 'float32')
 
         # y = T.alloc(0., m, 1)
-        cost = D.cost_from_X(((samples, X_condition), y_hat))
+        cost = D.cost_from_X(((samples, G_conditional_data), y_hat))
         sample_grad = T.grad(-cost, samples)
         rval['sample_grad_norm'] = T.sqrt(T.sqr(sample_grad).sum())
+
         _S, d_obj, g_obj, i_obj = self.get_samples_and_objectives(model, data)
         if model.monitor_inference and i_obj != 0:
             rval['objective_i'] = i_obj

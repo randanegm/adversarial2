@@ -131,16 +131,15 @@ class ConditionalGenerator(Generator):
             conditional_data = self.condition_distribution.sample(m)
         else:
             _, conditional_data = data
-            m = conditional_data[0]
+            m = conditional_data.shape[0]
 
         n = self.mlp.get_input_space().get_total_dimension()
         noise = self.get_noise((m, n))
         rval = OrderedDict()
 
-        data = (noise, conditional_data)
-
+        sampled_data = (noise, conditional_data)
         try:
-            rval.update(self.mlp.get_monitoring_channels((data, None)))
+            rval.update(self.mlp.get_monitoring_channels((sampled_data, None)))
         except Exception:
             warnings.warn("something went wrong with generator.mlp's monitoring channels")
 
@@ -151,15 +150,14 @@ class ConditionalGenerator(Generator):
         return rval
 
     def ll(self, data, n_samples, sigma):
-        # TODO finish
-        noise, conditional_data = data
-        samples = self.sample(conditional_data)
+        real_data, conditional_data = data
+        sampled_data = self.sample(conditional_data)
 
         output_space = self.mlp.get_output_space()
         if 'Conv2D' in str(output_space):
-            samples = output_space.convert(samples, output_space.axes, ('b', 0, 1, 'c'))
+            samples = output_space.convert(sampled_data, output_space.axes, ('b', 0, 1, 'c'))
             samples = samples.flatten(2)
-            data = output_space.convert(data, output_space.axes, ('b', 0, 1, 'c'))
+            data = output_space.convert(real_data, output_space.axes, ('b', 0, 1, 'c'))
             data = data.flatten(2)
         parzen = theano_parzen(data, samples, sigma)
         return parzen

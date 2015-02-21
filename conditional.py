@@ -126,12 +126,12 @@ class ConditionalGenerator(Generator):
         return sample
 
     def get_monitoring_channels(self, data):
-        # DEBUG
-        print data, type(data)
-
         if data is None:
             m = 100
             conditional_data = self.condition_distribution.sample(m)
+        else:
+            _, conditional_data = data
+            m = conditional_data[0]
 
         n = self.mlp.get_input_space().get_total_dimension()
         noise = self.get_noise((m, n))

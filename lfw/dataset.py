@@ -27,7 +27,7 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
 
         # Load raw pixel integer values
         dtype = 'uint8'
-        X = np.zeros((len(files), C, H, W), dtype=dtype)
+        X = np.zeros((len(files), W, H, C), dtype=dtype)
         for i, img_path in enumerate(files):
             full_path = os.path.join(lfw_path, img_path)
             im = image.load(full_path, rescale_image=False, dtype=dtype)
@@ -40,7 +40,7 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
                 im = im.reshape(W, H, 1).repeat(3, 2)
 
             # Swap color channel to front
-            X[i] = im.swapaxes(0, 2)
+            X[i] = im
 
         # Cast to float32, center / scale if necessary
         X = np.cast['float32'](X)

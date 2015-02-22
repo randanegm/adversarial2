@@ -32,8 +32,12 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         img_ids = []
 
         for i, line in enumerate(files):
-            img_path, img_id = line.strip().split()
-            img_ids.append(img_id)
+            if '\t' in line:
+                # New format: contains image IDs
+                img_path, img_id = line.strip().split()
+                img_ids.append(img_id)
+            else:
+                img_path = line.strip()
 
             full_path = os.path.join(lfw_path, img_path)
             im = image.load(full_path, rescale_image=False, dtype=dtype)
@@ -75,6 +79,10 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         # Load embeddings if provided
         Y = None
         if embedding_file is not None:
+            if len(img_ids) != len(files):
+                raise ValueError("You must provide a filelist with indexes "
+                                 "into the embedding array for each image.")
+
             embeddings = np.load(embedding_file)['arr_0']
             assert embeddings.shape[0] >= len(files)
 

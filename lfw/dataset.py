@@ -12,7 +12,8 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
     TODO
     """
 
-    def __init__(self, lfw_path, filelist_path, center=False, scale=False,
+    def __init__(self, lfw_path, filelist_path, embedding_file=None,
+                 center=False, scale=False,
                  gcn=None, shuffle=False, rng=None, seed=132987,
                  axes=('b', 0, 1, 'c'), img_shape=(3, 250, 250)):
         self.axes = axes
@@ -28,7 +29,12 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         # Load raw pixel integer values
         dtype = 'uint8'
         X = np.zeros((len(files), W, H, C), dtype=dtype)
-        for i, img_path in enumerate(files):
+        img_ids = []
+
+        for i, line in enumerate(files):
+            img_path, img_id = line.strip().split()
+            img_ids.append(img_id)
+
             full_path = os.path.join(lfw_path, img_path)
             im = image.load(full_path, rescale_image=False, dtype=dtype)
 
@@ -66,10 +72,18 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
             rand_idx = rng.permutation(len(X))
             X = X[rand_idx]
 
+        # Load embeddings if provided
+        Y = None
+        if embedding_file is not None:
+            embeddings = np.load(embedding_file)['arr_0']
+            assert embeddings.shape[0] >= len(files)
+
+            Y = embeddings[img_ids]
+
         # create view converting for retrieving topological view
         self.view_converter = dense_design_matrix.DefaultViewConverter((W, H, C), axes)
 
         # init super class
-        super(LFW, self).__init__(X=X, y=None, y_labels=None)
+        super(LFW, self).__init__(X=X, y=Y)
 
         assert not contains_nan(self.X)

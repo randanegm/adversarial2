@@ -28,12 +28,12 @@ class IdentityLayer(Layer):
 
 
 class MaxPoolC01BLayer(Layer):
-    def __init__(self, layer_name, pool_shape, pool_stride, *args, **kwargs):
+    def __init__(self, layer_name, pool_shape, pool_stride):
         self.layer_name = layer_name
         self.pool_shape = pool_shape
         self.pool_stride = pool_stride
 
-        super(MaxPoolC01BLayer, self).__init__(*args, **kwargs)
+        super(MaxPoolC01BLayer, self).__init__()
 
     @functools.wraps(Layer.set_input_space)
     def set_input_space(self, space):

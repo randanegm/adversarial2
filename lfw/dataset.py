@@ -5,6 +5,7 @@ from pylearn2.datasets import dense_design_matrix
 from pylearn2.expr.preprocessing import global_contrast_normalize
 from pylearn2.utils import contains_nan, image
 from pylearn2.utils.rng import make_np_rng
+import theano
 
 
 class LFW(dense_design_matrix.DenseDesignMatrix):
@@ -35,7 +36,7 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
             if '\t' in line:
                 # New format: contains image IDs
                 img_path, img_id = line.strip().split()
-                img_ids.append(img_id)
+                img_ids.append(int(img_id))
             else:
                 img_path = line.strip()
 
@@ -86,7 +87,7 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
             embeddings = np.load(embedding_file)['arr_0']
             assert embeddings.shape[0] >= len(files)
 
-            Y = embeddings[img_ids]
+            Y = embeddings[img_ids].astype(theano.config.floatX)
 
         # create view converting for retrieving topological view
         self.view_converter = dense_design_matrix.DefaultViewConverter((W, H, C), axes)
@@ -95,3 +96,7 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         super(LFW, self).__init__(X=X, y=Y)
 
         assert not contains_nan(self.X)
+
+        # Another hack: rename 'targets' to match model expectations
+        space, (X_source, y_source) = self.data_specs
+        self.data_specs = (space, (X_source, 'condition'))

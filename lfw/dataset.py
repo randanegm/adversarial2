@@ -14,7 +14,7 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
     """
 
     def __init__(self, lfw_path, filelist_path, embedding_file=None,
-                 center=False, scale=False,
+                 center=False, scale=False, start=None, stop=None,
                  gcn=None, shuffle=False, rng=None, seed=132987,
                  axes=('b', 0, 1, 'c'), img_shape=(3, 250, 250)):
         self.axes = axes
@@ -81,6 +81,16 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
 
             X = X[rand_idx]
             img_ids = img_ids[rand_idx]
+
+        if start is not None:
+            assert start >= 0
+            assert stop > start
+            assert stop <= X.shape[0]
+
+            X = X[start:stop]
+
+            if img_ids:
+                img_ids = img_ids[start:stop]
 
         # Load embeddings if provided
         Y = None

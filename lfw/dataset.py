@@ -89,7 +89,7 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
 
             X = X[start:stop]
 
-            if img_ids:
+            if len(img_ids) > 0:
                 img_ids = img_ids[start:stop]
 
         # Load embeddings if provided

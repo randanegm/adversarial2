@@ -59,6 +59,9 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         # Create dense design matrix from topological view
         X = X.reshape(X.shape[0], -1)
 
+        # Prepare img_ids
+        img_ids = np.array(img_ids, dtype='uint32')
+
         if center and scale:
             X[:] -= 127.5
             X[:] /= 127.5
@@ -75,7 +78,9 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         if shuffle:
             rng = make_np_rng(rng, seed, which_method='permutation')
             rand_idx = rng.permutation(len(X))
+
             X = X[rand_idx]
+            img_ids = img_ids[rand_idx]
 
         # Load embeddings if provided
         Y = None

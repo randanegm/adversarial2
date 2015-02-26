@@ -144,10 +144,10 @@ class Generator(Model):
 
     def dropout_fprop(self, sample_data, default_input_include_prob=1., default_input_scale=1., all_g_layers=False):
         if all_g_layers:
-            rval = self.mlp.dropout_fprop(formatted_noise, default_input_include_prob=default_input_include_prob, default_input_scale=default_input_scale, return_all=all_g_layers)
+            rval = self.mlp.dropout_fprop(sample_data, default_input_include_prob=default_input_include_prob, default_input_scale=default_input_scale, return_all=all_g_layers)
             other_layers, rval = rval[:-1], rval[-1]
         else:
-            rval = self.mlp.dropout_fprop(formatted_noise, default_input_include_prob=default_input_include_prob, default_input_scale=default_input_scale)
+            rval = self.mlp.dropout_fprop(sample_data, default_input_include_prob=default_input_include_prob, default_input_scale=default_input_scale)
             other_layers = None
 
         return rval, other_layers

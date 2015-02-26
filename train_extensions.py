@@ -1,4 +1,5 @@
 
+from pylearn2.gui.patch_viewer import PatchViewer
 from pylearn2.train_extensions import TrainExtension
 import theano
 import theano.tensor as T
@@ -12,7 +13,7 @@ class GenerateAndSave(TrainExtension):
     particular set of noise values.
     """
 
-    def __init__(self, generator, batch_size=25):
+    def __init__(self, generator, save_prefix, batch_size=20, grid_shape=(5, 4)):
         assert isinstance(generator, ConditionalGenerator)
 
         self.batch_sym = T.matrix('generate_batch')
@@ -20,8 +21,16 @@ class GenerateAndSave(TrainExtension):
                                           generator.dropout_fprop(self.batch_sym))
 
         self.batch = generator.get_noise(batch_size).eval()
+        self.save_prefix = save_prefix
+        self.patch_viewer = PatchViewer(grid_shape=grid_shape, patch_shape=(32, 32),
+                                        is_color=True)
 
     def on_monitor(self, model, dataset, algorithm):
-        samples = self.generate_f(self.batch)
+        samples = self.generate_f(self.batch).swapaxes(0, 3)
 
-        # TODO swap axes and save samples as images
+        self.patch_viewer.clear()
+        for sample in samples:
+            self.patch_viewer.add_patch(sample, rescale=True)
+
+        fname = self.save_prefix + '.%05i.png' % self.model.monitor.get_epochs_seen()
+        self.patch_viewer.save(fname)

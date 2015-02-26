@@ -60,6 +60,10 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         X = X.reshape(X.shape[0], -1)
 
         # Prepare img_ids
+        if embedding_file is not None:
+            if len(img_ids) != len(files):
+                raise ValueError("You must provide a filelist with indexes "
+                                 "into the embedding array for each image.")
         img_ids = np.array(img_ids, dtype='uint32')
 
         if center and scale:
@@ -95,10 +99,6 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         # Load embeddings if provided
         Y = None
         if embedding_file is not None:
-            if len(img_ids) != len(files):
-                raise ValueError("You must provide a filelist with indexes "
-                                 "into the embedding array for each image.")
-
             embeddings = np.load(embedding_file)['arr_0']
             assert embeddings.shape[0] >= len(files)
 
@@ -113,5 +113,6 @@ class LFW(dense_design_matrix.DenseDesignMatrix):
         assert not contains_nan(self.X)
 
         # Another hack: rename 'targets' to match model expectations
-        space, (X_source, y_source) = self.data_specs
-        self.data_specs = (space, (X_source, 'condition'))
+        if embedding_file is not None:
+            space, (X_source, y_source) = self.data_specs
+            self.data_specs = (space, (X_source, 'condition'))

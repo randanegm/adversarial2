@@ -142,16 +142,25 @@ class Generator(Model):
     def get_input_space(self):
         return self.mlp.get_input_space()
 
-    def sample_and_noise(self, num_samples, default_input_include_prob=1., default_input_scale=1., all_g_layers=False):
-        n = self.mlp.get_input_space().get_total_dimension()
-        noise = self.get_noise((num_samples, n))
-        formatted_noise = VectorSpace(n).format_as(noise, self.mlp.get_input_space())
+    def dropout_fprop(self, sample_data, default_input_include_prob=1., default_input_scale=1., all_g_layers=False):
         if all_g_layers:
             rval = self.mlp.dropout_fprop(formatted_noise, default_input_include_prob=default_input_include_prob, default_input_scale=default_input_scale, return_all=all_g_layers)
             other_layers, rval = rval[:-1], rval[-1]
         else:
             rval = self.mlp.dropout_fprop(formatted_noise, default_input_include_prob=default_input_include_prob, default_input_scale=default_input_scale)
             other_layers = None
+
+        return rval, other_layers
+
+    def sample_and_noise(self, num_samples, default_input_include_prob=1., default_input_scale=1., all_g_layers=False):
+        n = self.mlp.get_input_space().get_total_dimension()
+        noise = self.get_noise((num_samples, n))
+        formatted_noise = VectorSpace(n).format_as(noise, self.mlp.get_input_space())
+        rval, other_layers = self.dropout_fprop(sample_data,
+                                                default_input_include_prob=default_input_include_prob,
+                                                default_input_scale=default_input_scale,
+                                                all_g_layers=all_g_layers)
+
         return rval, formatted_noise, other_layers
 
     def sample(self, num_samples, default_input_include_prob=1., default_input_scale=1.):

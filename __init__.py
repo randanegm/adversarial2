@@ -156,7 +156,7 @@ class Generator(Model):
         n = self.mlp.get_input_space().get_total_dimension()
         noise = self.get_noise((num_samples, n))
         formatted_noise = VectorSpace(n).format_as(noise, self.mlp.get_input_space())
-        rval, other_layers = self.dropout_fprop(sample_data,
+        rval, other_layers = self.dropout_fprop(formatted_noise,
                                                 default_input_include_prob=default_input_include_prob,
                                                 default_input_scale=default_input_scale,
                                                 all_g_layers=all_g_layers)

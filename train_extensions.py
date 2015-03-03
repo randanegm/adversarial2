@@ -14,11 +14,11 @@ class GenerateAndSave(TrainExtension):
     """
 
     def __init__(self, generator, save_prefix, batch_size=20, grid_shape=(5, 4)):
-        assert isinstance(generator, ConditionalGenerator)
+        assert isinstance(generator, Generator)
 
         self.batch_sym = T.matrix('generate_batch')
         self.generate_f = theano.function([self.batch_sym],
-                                          generator.dropout_fprop(self.batch_sym))
+                                          generator.dropout_fprop(self.batch_sym)[0])
 
         self.batch = generator.get_noise(batch_size).eval()
         self.save_prefix = save_prefix
@@ -32,5 +32,5 @@ class GenerateAndSave(TrainExtension):
         for sample in samples:
             self.patch_viewer.add_patch(sample, rescale=True)
 
-        fname = self.save_prefix + '.%05i.png' % self.model.monitor.get_epochs_seen()
+        fname = self.save_prefix + '.%05i.png' % model.monitor.get_epochs_seen()
         self.patch_viewer.save(fname)

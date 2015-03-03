@@ -4,6 +4,7 @@ cGAN."""
 import numpy as np
 from pylearn2.linear.matrixmul import MatrixMul
 from pylearn2.models.mlp import MLP
+from pylearn2.monitor import push_monitor
 from pylearn2.space import CompositeSpace
 from pylearn2.utils import sharedX
 
@@ -54,6 +55,10 @@ class RetrainingConditionalAdversaryPair(ConditionalAdversaryPair):
                                                        monitor_discriminator=monitor_discriminator,
                                                        monitor_inference=monitor_inference,
                                                        shrink_d=shrink_d)
+
+        # Start a new monitor for retraining
+        # TODO transfer_experience: try True
+        push_monitor(self, 'monitor_retrain', transfer_experience=False)
 
     def _prepare_generator(self, generator, noise_space, condition_distribution, input_source)
         noise_dim = noise_space.get_total_dim()

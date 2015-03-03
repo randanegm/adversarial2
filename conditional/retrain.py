@@ -13,9 +13,10 @@ from conditional import ConditionalAdversaryPair, ConditionalGenerator, Conditio
 
 class RetrainingConditionalAdversaryPair(ConditionalAdversaryPair):
     # TODO custom learning rates for parameters of pretrained model
-    def __init__(self, pretrained_model, condition_space, condition_distribution,
+    def __init__(self, pretrained_model, generator_new_W_irange,
+                 condition_space, condition_distribution,
                  discriminator_condition_mlp, discriminator_joint_mlp,
-                 input_source, new_W_irange,
+                 input_source,
                  inferer=None,
                  inference_monitoring_batch_size=128,
                  monitor_generator=True,

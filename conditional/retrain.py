@@ -61,7 +61,7 @@ class RetrainingConditionalAdversaryPair(ConditionalAdversaryPair):
         # TODO transfer_experience: try True
         push_monitor(self, 'monitor_retrain', transfer_experience=False)
 
-    def _prepare_generator(self, generator, noise_space, condition_distribution, input_source)
+    def _prepare_generator(self, generator, noise_space, condition_distribution, input_source):
         noise_dim = noise_space.get_total_dim()
         condition_dim = self.condition_space.get_total_dim()
 

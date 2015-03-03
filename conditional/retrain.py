@@ -70,7 +70,7 @@ class RetrainingConditionalAdversaryPair(ConditionalAdversaryPair):
 
         rng = generator.mlp.rng
         new_W = np.vstack((pretrain_W, rng.uniform(-new_W_irange, new_W_irange,
-                                                   (condition_dim, pretrain_W.shape[1])))
+                                                   (condition_dim, pretrain_W.shape[1]))))
         new_W = sharedX(new_W)
         new_W.name = first_layer.name + '_retrain'
 

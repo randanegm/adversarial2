@@ -3,12 +3,14 @@
 import numpy as np
 from pylearn2.format.target_format import OneHotFormatter
 from pylearn2.space import VectorSpace
+from pylearn2.utils import sharedX
 import theano
+import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
 
 class Distribution(object):
-    def __init__(self, space):
+    def get_space__init__(self, space):
         self.space = space
 
     def get_space(self):
@@ -26,7 +28,7 @@ class Distribution(object):
 
         Returns
         -------
-        samples : ndarray of shape (n, num_features)
+        samples : batch of members of output space
         """
 
         raise NotImplementedError("abstract method")
@@ -62,7 +64,7 @@ class KernelDensityEstimateDistribution(Distribution):
     [1]: http://www.stat.cmu.edu/~cshalizi/350/lectures/28/lecture-28.pdf
     """
 
-    def __init__(self, X, bandwidth=1, space=None):
+    def __init__(self, X, bandwidth=1, space=None, rng=None):
         """
         Parameters
         ----------
@@ -78,24 +80,25 @@ class KernelDensityEstimateDistribution(Distribution):
         if space is None:
             space = VectorSpace(dim=X.shape[1], dtype=X.dtype)
 
-        super(KernelDensityEstimateDistribution, self).__init__(space)
+        # super(KernelDensityEstimateDistribution, self).__init__(space)
 
-        self.X = X
-        self.num_examples = X.shape[0]
-        self.num_features = X.shape[1]
+        self.X = sharedX(X, name='KDE_X')
 
-        self.bandwidth = bandwidth
-        self.cov_matrix = bandwidth * np.eye(self.num_features)
+        self.bandwidth = sharedX(bandwidth, name='bandwidth')
+        self.rng = RandomStreams() if rng is None else rng
 
-    def sample(self, n, out=None):
-        if out is None:
-            out = np.empty((n, self.num_features))
-
+    def sample(self, n):
         # Sample $n$ training examples
-        training_samples = self.X[np.random.choice(self.num_examples, n, replace=True)]
+        training_samples = self.X[self.rng.choice(size=(n,), a=self.X.shape[0], replace=True)]
 
         # Sample individually from each selected associated kernel
-        for i, sample in enumerate(training_samples):
-            out[i] = np.random.multivariate_normal(sample, self.cov_matrix)
+        #
+        # (not well documented within NumPy / Theano, but rng.normal
+        # call samples from a multivariate normal with diagonal
+        # covariance matrix)
+        ret, updates = theano.scan(fn=lambda sample: self.rng.normal(size=(self.X.shape[1],),
+                                                                avg=sample, std=self.bandwidth,
+                                                                dtype=theano.config.floatX),
+                                   sequences=[training_samples])
 
-        return out
+        return ret, updates

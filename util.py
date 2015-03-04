@@ -1,6 +1,7 @@
 
 import functools
 
+import numpy as np
 from pylearn2.models.mlp import Layer
 from pylearn2.sandbox.cuda_convnet.pool import max_pool_c01b
 
@@ -53,3 +54,9 @@ class MaxPoolC01BLayer(Layer):
     @functools.wraps(Layer.get_params)
     def get_params(self):
         return []
+
+
+def load_numpy_obj(file, key):
+    loaded = np.load(file)
+    assert key in loaded, "%s not found in NumPy file loaded from %s" % (key, file)
+    return loaded[key]

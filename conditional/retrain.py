@@ -83,7 +83,6 @@ class RetrainingConditionalAdversaryPair(ConditionalAdversaryPair):
 
         # HACK!
         generator.mlp._input_source = input_source
-        generator.mlp.layer_name = 'data_mlp'
 
         return ConditionalGenerator(generator.mlp, input_condition_space=self.condition_space,
                                     condition_distribution=condition_distribution, noise_dim=noise_dim)
@@ -99,6 +98,7 @@ class RetrainingConditionalAdversaryPair(ConditionalAdversaryPair):
         # HACK: Make the discriminator into a nested MLP
         # Should probably use PretrainedLayer here instead
         discriminator._nested = True
+        discriminator.layer_name = 'data_mlp'
 
         return ConditionalDiscriminator(discriminator, discriminator_condition_mlp,
                                         discriminator_joint_mlp, discriminator.input_space,

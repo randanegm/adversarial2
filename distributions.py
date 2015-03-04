@@ -96,9 +96,8 @@ class KernelDensityEstimateDistribution(Distribution):
         # (not well documented within NumPy / Theano, but rng.normal
         # call samples from a multivariate normal with diagonal
         # covariance matrix)
-        ret, updates = theano.scan(fn=lambda sample: self.rng.normal(size=(self.X.shape[1],),
-                                                                avg=sample, std=self.bandwidth,
-                                                                dtype=theano.config.floatX),
-                                   sequences=[training_samples])
+        ret = self.rng.normal(size=(n, self.X.shape[1]),
+                              avg=training_samples, std=self.bandwidth,
+                              dtype=theano.config.floatX)
 
-        return ret, updates
+        return ret

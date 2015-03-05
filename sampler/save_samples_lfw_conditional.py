@@ -28,7 +28,10 @@ if os.path.exists(args.output_directory):
     if os.path.isfile(args.output_directory):
         raise ValueError("Provided output directory %s is a file" % args.output_directory)
 else:
-    os.path.mkdirs(args.output_directory)
+    try:
+        os.mkdirs(args.output_directory)
+    except OSError:
+        os.mkdir(args.output_directory)
 
 
 generator = load_generator_from_file(args.model_file)

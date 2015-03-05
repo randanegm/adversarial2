@@ -61,9 +61,9 @@ def sample_conditional_fix_embeddings(generator, m, n,
 # Build string mapping for conditional samplers so that they can be
 # triggered from CLI
 conditional_samplers = {
-    'random': sampler.sample_conditional_random,
-    'fix_random': sampler.sample_conditional_fix_random,
-    'fix_embeddings': sampler.sample_conditional_fix_embeddings,
+    'random': sample_conditional_random,
+    'fix_random': sample_conditional_fix_random,
+    'fix_embeddings': sample_conditional_fix_embeddings,
 }
 
 

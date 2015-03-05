@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 
 from pylearn2.gui.patch_viewer import PatchViewer
-from pylearn2.utils import serial
 
 from adversarial import sampler
 

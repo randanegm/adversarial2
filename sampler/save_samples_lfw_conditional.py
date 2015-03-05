@@ -3,8 +3,11 @@ import os
 import sys
 
 from pylearn2.utils import serial
+import theano
+from theano import tensor as T
 
 from adversarial import sampler
+from adversarial.conditional import ConditionalAdversaryPair
 from adversarial.util import make_image_from_sample
 
 
@@ -25,11 +28,19 @@ if os.path.exists(args.output_directory):
     if os.path.isfile(args.output_directory):
         raise ValueError("Provided output directory %s is a file" % args.output_directory)
 else:
-    os.mkdirs(args.output_directory)
+    os.path.mkdirs(args.output_directory)
 
 
-samples = sampler.get_conditional_topo_samples(args.model_path, args.n, 1,
-                                               args.conditional_sampler)
+generator = serial.load(args.model_path)
+generator = generator.generator if isinstance(generator, ConditionalAdversaryPair)
+
+cond_samples = sampler.get_conditional_topo_samples(generator, args.n, 1,
+                                                    args.conditional_sampler)
+
+cond_samples_batch = T.matrix(dtype=cond_samples.dtype)
+sample_f = theano.function([cond_samples_batch], generator.dropout_fprop(cond_samples_batch))
+samples = sample_f(cond_samples)
+
 for i, sample in enumerate(samples):
     img = make_image_from_sample(sample)
     path = os.path.join(args.output_directory, '%04i.png' % i)

@@ -13,6 +13,7 @@ from adversarial import sampler
 # Build string mapping for conditional samplers so that they can be
 # triggered from CLI
 conditional_samplers = {
+    'random': sampler.sample_conditional_random,
     'fix_random': sampler.sample_conditional_fix_random,
     'fix_embeddings': sampler.sample_conditional_fix_embeddings,
 }

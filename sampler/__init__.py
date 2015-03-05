@@ -56,8 +56,9 @@ def sample_conditional_fix_embeddings(generator, m, n,
 
 def get_conditional_topo_samples(generator, m, n, condition_sampler_fn):
     conditional_batch = generator.condition_space.make_theano_batch()
-    conditional_data = args.conditional_sampler(generator, rows, sample_cols)
+    conditional_data = condition_sampler_fn(generator, m, n)
 
     topo_samples_batch = generator.sample(conditional_batch)
     topo_sample_f = theano.function([conditional_batch], topo_samples_batch)
     topo_samples = topo_sample_f(conditional_data).swapaxes(0, 3)
+    return topo_samples

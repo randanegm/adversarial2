@@ -76,7 +76,6 @@ rows = 4
 sample_cols = 5
 
 # First sample conditional data
-# TODO: Also try retrieving real conditional data
 conditional_batch = generator.condition_space.make_theano_batch()
 conditional_data = args.conditional_sampler(generator, rows, sample_cols)
 
@@ -86,12 +85,9 @@ topo_samples = topo_sample_f(conditional_data).swapaxes(0, 3)
 
 pv = PatchViewer(grid_shape=(rows, sample_cols), patch_shape=(32,32),
                  is_color=True)
-scale = np.abs(topo_samples).max()
 
 for i in xrange(topo_samples.shape[0]):
     topo_sample = topo_samples[i, :, :, :]
-    print topo_samples.shape, topo_sample.shape
-    print topo_sample.min(), topo_sample.max(), topo_sample.shape
-    pv.add_patch(topo_sample / scale, rescale=False)
+    pv.add_patch(topo_sample)
 
 pv.show()

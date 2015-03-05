@@ -40,7 +40,7 @@ m, n = 4, 5
 topo_samples = sampler.get_conditional_topo_samples(generator, m, n,
                                                     args.conditional_sampler)
 
-pv = PatchViewer(grid_shape=(rows, sample_cols), patch_shape=(32,32),
+pv = PatchViewer(grid_shape=(m, n), patch_shape=(32,32),
                  is_color=True)
 
 for i in xrange(topo_samples.shape[0]):

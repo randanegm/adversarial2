@@ -3,7 +3,7 @@
     axes: ['c', 0, 1, 'b'],
     gcn: 55.,
     lfw_path: '/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/faces32',
-    filelist_path: '/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/filelist.dev.ids.txt', #train.ids.txt',
+    filelist_path: '/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/filelist.train.ids.txt',
     embedding_file: '/afs/cs.stanford.edu/u/jgauthie/scr/lfw-lsa/LFW_attributes_30d.npz',
     img_shape: [3, 32, 32],
     # which_set: 'train',
@@ -112,5 +112,5 @@
   ],
 
   save_path: "${PYLEARN2_TRAIN_FILE_FULL_STEM}.pkl",
-  save_freq: 10,
+  save_freq: 5,
 }

@@ -7,6 +7,7 @@ from pylearn2.config import yaml_parse
 from pylearn2.datasets import dense_design_matrix
 from pylearn2.gui.patch_viewer import PatchViewer
 import numpy as np
+import theano
 
 dataset = yaml_parse.load(model.dataset_yaml_src)
 if dataset.view_converter is None:
@@ -17,10 +18,14 @@ sample_cols = 5
 
 # First sample conditional data
 # TODO: Also try retrieving real conditional data
+conditional_batch = model.generator.condition_space.make_theano_batch()
 conditional_data = model.generator.condition_distribution.sample(rows * sample_cols).eval()
 
 # For some reason format_as from VectorSpace is not working right
-topo_samples = model.generator.sample(conditional_data).eval()
+topo_samples_batch = model.generator.sample(conditional_batch)
+topo_sample_f = theano.function([conditional_batch], topo_samples_batch)
+topo_samples = topo_sample_f(conditional_data)
+
 samples = dataset.get_design_matrix(topo_samples)
 print 'Original shape:', samples.shape
 dataset.view_converter.axes = ['b', 0, 1, 'c']

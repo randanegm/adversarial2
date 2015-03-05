@@ -52,3 +52,11 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# Pickle files, joblib files (saved models)
+*.pkl*
+*.joblib*
+
+# jgauthie on AFS -- special dirs / files
+scripts
+.env
+.start.sh

@@ -7,6 +7,8 @@ from pylearn2.models.mlp import Layer
 from pylearn2.sandbox.cuda_convnet.pool import max_pool_c01b
 from pylearn2.utils import serial
 
+from adversarial.conditional import ConditionalAdversaryPair, ConditionalGenerator
+
 
 class IdentityLayer(Layer):
     def __init__(self, layer_name, *args, **kwargs):

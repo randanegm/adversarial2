@@ -37,6 +37,7 @@ else:
 samples = sampler.get_conditional_topo_samples(args.model_path, args.n, 1,
                                                args.conditional_sampler)
 
+# TODO also need to save conditional data which generated these samples
 for i, sample in enumerate(samples):
     img = make_image_from_sample(sample)
     path = os.path.join(args.output_directory, '%04i.png' % i)

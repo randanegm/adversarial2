@@ -38,12 +38,13 @@ def sample_conditional_fix_embeddings(generator, m, n,
     source_points = embs[:m]
     dim = source_points.shape[1]
 
-    noisy_points = (np.copy(source_points).reshape((m, 1, dim)).repeat(n - 1, axis=1)
-                                          .reshape((m * (n - 1), dim)))
+    noisy_points = np.copy(source_points).reshape((m, 1, dim)).repeat(n - 1, axis=1)
+    noisy_points += noise_range * (np.random.rand(*noisy_points.shape) * 2. - 1.)
 
     ret = (np.concatenate((source_points.reshape((m, 1, dim)), noisy_points), axis=1)
              .reshape((m * n, dim)))
-    return ret
+
+    return np.cast['float32'](ret)
 
 
 # Build string mapping for conditional samplers so that they can be

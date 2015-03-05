@@ -2,6 +2,7 @@
 import functools
 
 import numpy as np
+from PIL import Image
 from pylearn2.models.mlp import Layer
 from pylearn2.sandbox.cuda_convnet.pool import max_pool_c01b
 
@@ -60,3 +61,23 @@ def load_numpy_obj(file, key):
     loaded = np.load(file)
     assert key in loaded, "%s not found in NumPy file loaded from %s" % (key, file)
     return loaded[key]
+
+
+def make_image_from_sample(sample):
+    """
+    Make a PIL Image object from the given sampled image data. Should be
+    in (0, 1, 'c') format.
+    """
+
+    assert sample.ndim == 3, 'Sample should have axes (0, 1, "c"); instead has %i axes' % sample.ndim
+    assert sample.shape[2] <= 3, "Sample has %i color channels -- this can't be right.." % sample.shape[2]
+
+    # Rescale
+    sample = sample / np.abs(sample).max()
+
+    sample *= 0.5
+    sample += 0.5
+    sample = np.cast['uint8'](sample * 255)
+
+    img = Image.fromarray(sample)
+    return img

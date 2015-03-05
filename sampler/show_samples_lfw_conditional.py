@@ -35,16 +35,10 @@ model = serial.load(args.model_path)
 generator = model if args.model_is_generator_only else model.generator
 space = generator.get_output_space()
 
-rows = 4
-sample_cols = 5
+m, n = 4, 5
 
-# First sample conditional data
-conditional_batch = generator.condition_space.make_theano_batch()
-conditional_data = args.conditional_sampler(generator, rows, sample_cols)
-
-topo_samples_batch = generator.sample(conditional_batch)
-topo_sample_f = theano.function([conditional_batch], topo_samples_batch)
-topo_samples = topo_sample_f(conditional_data).swapaxes(0, 3)
+topo_samples = sampler.get_conditional_topo_samples(generator, m, n,
+                                                    args.conditional_sampler)
 
 pv = PatchViewer(grid_shape=(rows, sample_cols), patch_shape=(32,32),
                  is_color=True)

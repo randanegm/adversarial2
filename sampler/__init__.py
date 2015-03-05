@@ -4,6 +4,7 @@ component.
 """
 
 import numpy as np
+import theano
 
 
 def sample_conditional_fix_random(generator, m, n, noise_range=1):
@@ -43,3 +44,12 @@ def sample_conditional_fix_embeddings(generator, m, n,
              .reshape((m * n, dim)))
 
     return np.cast['float32'](ret)
+
+
+def get_conditional_topo_samples(generator, m, n, condition_sampler_fn):
+    conditional_batch = generator.condition_space.make_theano_batch()
+    conditional_data = args.conditional_sampler(generator, rows, sample_cols)
+
+    topo_samples_batch = generator.sample(conditional_batch)
+    topo_sample_f = theano.function([conditional_batch], topo_samples_batch)
+    topo_samples = topo_sample_f(conditional_data).swapaxes(0, 3)

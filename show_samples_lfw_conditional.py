@@ -60,8 +60,8 @@ parser = ArgumentParser(description=('Sample images from the generative componen
 parser.add_argument('-g', '--model-is-generator-only', action='store_true', default=False,
                     help='If true, provided model path is a generator only, not a full cGAN')
 parser.add_argument('-s', '--conditional-sampler', default='fix_random',
-                    choices=conditional_samplers.keys(),
-                    type=lambda k: conditional_samplers[k])#conditional_samplers.__getitem__)
+                    choices=conditional_samplers.values(),
+                    type=lambda k: conditional_samplers[k])
 parser.add_argument('model_path')
 args = parser.parse_args()
 

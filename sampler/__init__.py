@@ -8,6 +8,7 @@ from pylearn2.utils import serial
 import theano
 
 from adversarial.conditional import ConditionalAdversaryPair, ConditionalGenerator
+from adversarial.util import load_generator_from_file
 
 
 def sample_conditional_random(generator, m, n):
@@ -68,12 +69,7 @@ conditional_samplers = {
 
 def get_conditional_topo_samples(generator, m, n, condition_sampler_fn):
     if isinstance(generator, basestring):
-        generator = serial.load(generator)
-
-        if isinstance(generator, ConditionalAdversaryPair):
-            generator = generator.generator
-
-        assert isinstance(generator, ConditionalGenerator), 'Invalid generator path provided; loaded a value %r' % generator
+        generator = load_generator_from_file(generator)
 
     conditional_batch = generator.condition_space.make_theano_batch()
     conditional_data = condition_sampler_fn(generator, m, n)

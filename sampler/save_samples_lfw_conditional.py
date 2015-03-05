@@ -8,7 +8,7 @@ from theano import tensor as T
 
 from adversarial import sampler
 from adversarial.conditional import ConditionalAdversaryPair
-from adversarial.util import make_image_from_sample
+from adversarial.util import load_generator_from_file, make_image_from_sample
 
 
 parser = ArgumentParser(description=('Sample a large number of images from a cGAN and '
@@ -31,8 +31,7 @@ else:
     os.path.mkdirs(args.output_directory)
 
 
-generator = serial.load(args.model_path)
-generator = generator.generator if isinstance(generator, ConditionalAdversaryPair)
+generator = load_generator_from_file(args.model_file)
 
 cond_samples = sampler.get_conditional_topo_samples(generator, args.n, 1,
                                                     args.conditional_sampler)

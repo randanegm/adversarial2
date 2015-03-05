@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from pylearn2.models.mlp import Layer
 from pylearn2.sandbox.cuda_convnet.pool import max_pool_c01b
+from pylearn2.utils import serial
 
 
 class IdentityLayer(Layer):
@@ -61,6 +62,17 @@ def load_numpy_obj(file, key):
     loaded = np.load(file)
     assert key in loaded, "%s not found in NumPy file loaded from %s" % (key, file)
     return loaded[key]
+
+
+def load_generator_from_file(file):
+    generator = serial.load(generator)
+
+    if isinstance(generator, ConditionalAdversaryPair):
+        generator = generator.generator
+
+    assert isinstance(generator, ConditionalGenerator), 'Invalid generator path provided; loaded a value %r' % generator
+
+    return generator
 
 
 def make_image_from_sample(sample):

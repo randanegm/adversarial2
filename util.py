@@ -67,7 +67,7 @@ def load_numpy_obj(file, key):
 
 
 def load_generator_from_file(file):
-    generator = serial.load(generator)
+    generator = serial.load(file)
 
     if isinstance(generator, ConditionalAdversaryPair):
         generator = generator.generator

@@ -34,14 +34,8 @@ else:
         os.mkdir(args.output_directory)
 
 
-generator = load_generator_from_file(args.model_file)
-
-cond_samples = sampler.get_conditional_topo_samples(generator, args.n, 1,
-                                                    args.conditional_sampler)
-
-cond_samples_batch = T.matrix(dtype=cond_samples.dtype)
-sample_f = theano.function([cond_samples_batch], generator.sample(cond_samples_batch))
-samples = sample_f(cond_samples)
+samples = sampler.get_conditional_topo_samples(args.model_path, args.n, 1,
+                                               args.conditional_sampler)
 
 for i, sample in enumerate(samples):
     img = make_image_from_sample(sample)

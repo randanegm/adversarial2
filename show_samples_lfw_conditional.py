@@ -23,6 +23,8 @@ conditional_data = model.generator.condition_distribution.sample(rows).eval()
 conditional_dim = conditional_data.shape[1]
 conditional_data = (conditional_data.reshape((rows, 1, conditional_dim)).repeat(sample_cols, axis=1)
                                     .reshape((rows * sample_cols, conditional_dim)))
+# Add small amount of noise
+conditional_data += 2 * (np.random.rand(*conditional_data.shape) * 2. - 1.)
 
 topo_samples_batch = model.generator.sample(conditional_batch)
 topo_sample_f = theano.function([conditional_batch], topo_samples_batch)

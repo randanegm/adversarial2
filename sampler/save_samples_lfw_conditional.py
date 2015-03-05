@@ -30,7 +30,7 @@ if os.path.exists(args.output_directory):
 else:
     try:
         os.mkdirs(args.output_directory)
-    except OSError:
+    except AttributeError:
         os.mkdir(args.output_directory)
 
 

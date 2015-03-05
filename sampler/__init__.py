@@ -7,6 +7,14 @@ import numpy as np
 import theano
 
 
+def sample_conditional_random(generator, m, n):
+    """
+    Sample `m * n` points from condition space completely randomly.
+    """
+
+    return generator.condition_distribution.sample(m * n).eval()
+
+
 def sample_conditional_fix_random(generator, m, n, noise_range=1):
     """
     Sample `m * n` points in condition space by sampling `m` points

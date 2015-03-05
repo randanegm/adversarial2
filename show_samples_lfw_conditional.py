@@ -16,7 +16,7 @@ def sample_conditional_fix_random(generator, m, n, noise_range=1):
 
     conditional_data = generator.condition_distribution.sample(m).eval()
     conditional_dim = conditional_data.shape[1]
-    conditional_data = (conditional_data.reshape((m, 1, conditional_dim).repeat(n, axis=1))
+    conditional_data = (conditional_data.reshape((m, 1, conditional_dim)).repeat(n, axis=1)
                                         .reshape((m * n, conditional_dim)))
     conditional_data += noise_range * (np.random.rand(*conditional_data.shape) * 2. - 1.)
 
@@ -37,27 +37,27 @@ parser.add_argument('-g', '--model-is-generator-only', action='store_true', defa
                     help='If true, provided model path is a generator only, not a full cGAN')
 parser.add_argument('-s', '--conditional-sampler', default='fix_random',
                     choices=conditional_samplers.keys(),
-                    type=conditional_samplers.__getitem__)
+                    type=lambda k: conditional_samplers[k])#conditional_samplers.__getitem__)
 parser.add_argument('model_path')
 args = parser.parse_args()
 
 
 # Load model
 model = serial.load(args.model_path)
-space = model.generator.get_output_space()
-
+generator = model if args.model_is_generator_only else model.generator
+space = generator.get_output_space()
 
 rows = 4
 sample_cols = 5
 
 # First sample conditional data
 # TODO: Also try retrieving real conditional data
-conditional_batch = model.generator.condition_space.make_theano_batch()
-conditional_data = args.conditional_sampler(model.generator, rows, sample_cols)
+conditional_batch = generator.condition_space.make_theano_batch()
+conditional_data = args.conditional_sampler(generator, rows, sample_cols)
 
-topo_samples_batch = model.generator.sample(conditional_batch)
+topo_samples_batch = generator.sample(conditional_batch)
 topo_sample_f = theano.function([conditional_batch], topo_samples_batch)
-topo_samples = topo_sample_f(conditional_data)
+topo_samples = topo_sample_f(conditional_data).swapaxes(0, 3)
 
 pv = PatchViewer(grid_shape=(rows, sample_cols), patch_shape=(32,32),
                  is_color=True)

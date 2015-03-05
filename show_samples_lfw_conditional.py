@@ -11,7 +11,7 @@ import theano
 def sample_conditional_fix_random(generator, m, n, noise_range=1):
     """
     Sample `m * n` points in condition space by sampling `m` points
-    and adding small random noise `m` times for each point.
+    and adding small random noise `n` times for each point.
     """
 
     conditional_data = generator.condition_distribution.sample(m).eval()
@@ -23,10 +23,34 @@ def sample_conditional_fix_random(generator, m, n, noise_range=1):
     return conditional_data
 
 
+def sample_conditional_fix_embeddings(generator, m, n,
+                                      embedding_file='/afs/cs.stanford.edu/u/jgauthie/scr/lfw-lsa/LFW_attributes_30d.npz',
+                                      noise_range=1):
+    """
+    Sample `m * n` points in condition space by retrieving `m` points
+    from a provided dataset and adding small random noise `n - 1` times
+    for each point.
+    """
+
+    embs = np.load(embedding_file)['arr_0']
+    np.random.shuffle(embs)
+
+    source_points = embs[:m]
+    dim = source_points.shape[1]
+
+    noisy_points = (np.copy(source_points).reshape((m, 1, dim)).repeat(n - 1, axis=1)
+                                          .reshape((m * (n - 1), dim)))
+
+    ret = (np.concatenate((source_points.reshape((m, 1, dim)), noisy_points), axis=1)
+             .reshape((m * n, dim)))
+    return ret
+
+
 # Build string mapping for conditional samplers so that they can be
 # triggered from CLI
 conditional_samplers = {
     'fix_random': sample_conditional_fix_random,
+    'fix_embeddings': sample_conditional_fix_embeddings,
 }
 
 

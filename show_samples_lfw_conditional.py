@@ -19,9 +19,11 @@ sample_cols = 5
 # First sample conditional data
 # TODO: Also try retrieving real conditional data
 conditional_batch = model.generator.condition_space.make_theano_batch()
-conditional_data = model.generator.condition_distribution.sample(rows * sample_cols).eval()
+conditional_data = model.generator.condition_distribution.sample(rows).eval()
+conditional_dim = conditional_data.shape[1]
+conditional_data = (conditional_data.reshape((rows, 1, conditional_dim)).repeat(sample_cols, axis=1)
+                                    .reshape((rows * sample_cols, conditional_dim)))
 
-# For some reason format_as from VectorSpace is not working right
 topo_samples_batch = model.generator.sample(conditional_batch)
 topo_sample_f = theano.function([conditional_batch], topo_samples_batch)
 topo_samples = topo_sample_f(conditional_data)

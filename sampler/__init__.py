@@ -4,7 +4,10 @@ component.
 """
 
 import numpy as np
+from pylearn2.utils import serial
 import theano
+
+from adversarial.conditional import ConditionalAdversaryPair, ConditionalGenerator
 
 
 def sample_conditional_random(generator, m, n):
@@ -54,7 +57,24 @@ def sample_conditional_fix_embeddings(generator, m, n,
     return np.cast['float32'](ret)
 
 
+# Build string mapping for conditional samplers so that they can be
+# triggered from CLI
+conditional_samplers = {
+    'random': sampler.sample_conditional_random,
+    'fix_random': sampler.sample_conditional_fix_random,
+    'fix_embeddings': sampler.sample_conditional_fix_embeddings,
+}
+
+
 def get_conditional_topo_samples(generator, m, n, condition_sampler_fn):
+    if isinstance(generator, basestring):
+        generator = serial.load(generator)
+
+        if isinstance(generator, ConditionalAdversaryPair):
+            generator = generator.generator
+
+        assert isinstance(generator, ConditionalGenerator), 'Invalid generator path provided; loaded a value %r' % generator
+
     conditional_batch = generator.condition_space.make_theano_batch()
     conditional_data = condition_sampler_fn(generator, m, n)
 

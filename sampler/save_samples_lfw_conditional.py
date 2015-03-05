@@ -38,7 +38,7 @@ cond_samples = sampler.get_conditional_topo_samples(generator, args.n, 1,
                                                     args.conditional_sampler)
 
 cond_samples_batch = T.matrix(dtype=cond_samples.dtype)
-sample_f = theano.function([cond_samples_batch], generator.dropout_fprop(cond_samples_batch))
+sample_f = theano.function([cond_samples_batch], generator.sample(cond_samples_batch))
 samples = sample_f(cond_samples)
 
 for i, sample in enumerate(samples):

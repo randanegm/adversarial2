@@ -3,6 +3,7 @@ import os
 import sys
 
 from pylearn2.utils import serial
+import scipy.io
 import theano
 from theano import tensor as T
 
@@ -34,13 +35,15 @@ else:
         os.mkdir(args.output_directory)
 
 
-samples = sampler.get_conditional_topo_samples(args.model_path, args.n, 1,
-                                               args.conditional_sampler)
+samples, cond_data = sampler.get_conditional_topo_samples(args.model_path, args.n, 1,
+                                                          args.conditional_sampler)
 
-# TODO also need to save conditional data which generated these samples
 for i, sample in enumerate(samples):
     img = make_image_from_sample(sample)
     path = os.path.join(args.output_directory, '%04i.png' % i)
     img.save(path)
-
 print >> sys.stderr, "Saved %i images to %s." % (args.n, args.output_directory)
+
+np.save(os.path.join(args.output_directory, 'conditional_data'), conditional_data=cond_data)
+scipy.io.savemat(os.path.join(args.output_directory, 'conditional_data.mat'), {'x': cond_data})
+print >> sys.stderr, 'Saved conditional data matrix.'

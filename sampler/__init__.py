@@ -77,4 +77,4 @@ def get_conditional_topo_samples(generator, m, n, condition_sampler_fn):
     topo_samples_batch = generator.sample(conditional_batch)
     topo_sample_f = theano.function([conditional_batch], topo_samples_batch)
     topo_samples = topo_sample_f(conditional_data).swapaxes(0, 3)
-    return topo_samples
+    return topo_samples, conditional_data

@@ -16,8 +16,8 @@ args = parser.parse_args()
 
 
 m, n = 4, 5
-topo_samples = sampler.get_conditional_topo_samples(args.model_path, m, n,
-                                                    args.conditional_sampler)
+topo_samples, _ = sampler.get_conditional_topo_samples(args.model_path, m, n,
+                                                       args.conditional_sampler)
 
 pv = PatchViewer(grid_shape=(m, n), patch_shape=(32,32),
                  is_color=True)

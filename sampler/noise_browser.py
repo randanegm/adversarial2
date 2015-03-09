@@ -15,6 +15,7 @@ from argparse import ArgumentParser
 
 import numpy as np
 from pylearn2.gui.patch_viewer import PatchViewer
+import theano
 
 from adversarial import sampler, util
 
@@ -43,10 +44,11 @@ base_noise_data = generator.get_noise((n, generator.noise_dim))
 # identical
 condition_dim = base_conditional_data.shape[1]
 conditional_data = base_conditional_data.reshape((1, n, condition_dim)).repeat(m, axis=0)
-noise_data = base_noise_data.reshape((1, n, generator.noise_dim)).repeat(m, axis=0)
+noise_data = base_noise_data.reshape((1, n, generator.noise_dim)).repeat(m, axis=0).eval()
 
 # Build `m * n` grid of condition noise, where columns are identical
-conditional_noise = args.conditional_noise_range * (np.random.rand(m, 1, condition_dim) * 2. - 1.)
+conditional_noise = args.conditional_noise_range * ((np.random.rand(m, 1, condition_dim) * 2. - 1.)
+                                                     .astype(base_conditional_data.dtype))
 conditional_noise = conditional_noise.repeat(n, axis=1)
 
 # Noise up conditional data
@@ -60,8 +62,8 @@ noise_data = noise_data.reshape((m * n, generator.noise_dim))
 noise_batch = generator.noise_space.make_theano_batch()
 conditional_batch = generator.condition_space.make_theano_batch()
 topo_sample_f = theano.function([noise_batch, conditional_batch],
-                                generator.dropout_fprop((noise_batch, conditional_batch)))
-topo_samples = topo_sample_f(noise_data, conditional_data_noised)
+                                generator.dropout_fprop((noise_batch, conditional_batch))[0])
+topo_samples = topo_sample_f(noise_data, conditional_data_noised).swapaxes(0, 3)
 # TODO add final row of unmodified images
 
 pv = PatchViewer(grid_shape=(m, n), patch_shape=(32,32),

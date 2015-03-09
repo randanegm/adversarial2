@@ -17,7 +17,7 @@ def get_embeddings(file, n):
     embs = np.load(file)['arr_0']
     np.random.shuffle(embs)
 
-    source_points = embs[:m].copy()
+    source_points = embs[:n].copy()
     dim = source_points.shape[1]
 
     return source_points, dim

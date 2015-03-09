@@ -187,8 +187,6 @@
         embedding_file: '/afs/cs.stanford.edu/u/jgauthie/scr/lfw-lsa/LFW_attributes_50d.npz',
         img_shape: [3, 32, 32],
         # which_set: 'train',
-        start: 0,
-        stop: 16
       }
       #'test'  : !obj:pylearn2.datasets.cifar10.CIFAR10 {
       #              which_set: 'test',
@@ -231,5 +229,5 @@
   ],
 
   save_path: "${PYLEARN2_TRAIN_FILE_FULL_STEM}.pkl",
-#  save_freq: 10,
+  save_freq: 10,
 }

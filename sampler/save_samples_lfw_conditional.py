@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import os
 import sys
 
+import numpy as np
 from pylearn2.utils import serial
 import scipy.io
 import theano
@@ -44,6 +45,6 @@ for i, sample in enumerate(samples):
     img.save(path)
 print >> sys.stderr, "Saved %i images to %s." % (args.n, args.output_directory)
 
-np.save(os.path.join(args.output_directory, 'conditional_data'), conditional_data=cond_data)
+np.save(os.path.join(args.output_directory, 'conditional_data'), cond_data)
 scipy.io.savemat(os.path.join(args.output_directory, 'conditional_data.mat'), {'x': cond_data})
 print >> sys.stderr, 'Saved conditional data matrix.'

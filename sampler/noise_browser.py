@@ -13,6 +13,7 @@ vectors to sample and `n` is the number of images on which to try each out.
 
 from argparse import ArgumentParser
 
+import numpy as np
 from pylearn2.gui.patch_viewer import PatchViewer
 
 from adversarial import sampler, util
@@ -20,7 +21,7 @@ from adversarial import sampler, util
 
 # Parse arguments
 parser = ArgumentParser(description=('Demonstrate effects of adding noise '
-                                     'to conditional data.')
+                                     'to conditional data.'))
 parser.add_argument('-s', '--conditional-sampler', default='random',
                     choices=sampler.conditional_samplers.values(),
                     type=lambda k: sampler.conditional_samplers[k])

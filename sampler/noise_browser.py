@@ -37,7 +37,7 @@ generator = util.load_generator_from_file(args.model_path)
 
 
 base_conditional_data = args.conditional_sampler(generator, 1, n)
-base_noise_data = generator.get_noise((n, generator.noise_dim)
+base_noise_data = generator.get_noise((n, generator.noise_dim))
 
 # Build `m * n` grid of conditional data + noise data, where rows are
 # identical
@@ -57,7 +57,11 @@ conditional_data_noised = conditional_data + conditional_noise
 conditional_data_noised = conditional_data_noised.reshape((m * n, condition_dim))
 noise_data = noise_data.reshape((m * n, generator.noise_dim))
 
-topo_samples = generator.dropout_fprop((noise_data, conditional_data_noised)).eval()
+noise_batch = generator.noise_space.make_theano_batch()
+conditional_batch = generator.condition_space.make_theano_batch()
+topo_sample_f = theano.function([noise_batch, conditional_batch],
+                                generator.dropout_fprop((noise_batch, conditional_batch)))
+topo_samples = topo_sample_f(noise_data, conditional_data_noised)
 # TODO add final row of unmodified images
 
 pv = PatchViewer(grid_shape=(m, n), patch_shape=(32,32),

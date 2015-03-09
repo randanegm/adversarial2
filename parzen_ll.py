@@ -1,6 +1,7 @@
 import argparse
 import time
 import gc
+
 import numpy
 import theano
 import theano.tensor as T
@@ -9,6 +10,7 @@ from pylearn2.config import yaml_parse
 from pylearn2.datasets.mnist import MNIST
 from pylearn2.datasets.tfd import TFD
 
+from adversarial.lfw.dataset import LFW
 
 
 def get_nll(x, parzen, batch_size=10):
@@ -89,6 +91,13 @@ def get_test(ds, test, fold=0):
         return test.get_test_set()
     elif ds == 'tfd':
         return test.get_test_set(fold=fold)
+    elif ds == 'lfwcrop':
+        # HACK
+        return LFW(axes=test.axes,
+                   gcn=test.gcn,
+                   lfw_path='/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/faces32',
+                   filelist_path='/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/filelist.test.txt',
+                   img_shape=test.img_shape)
     else:
         raise ValueError("Unknow dataset: {}".format(args.dataet))
 

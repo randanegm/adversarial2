@@ -19,6 +19,7 @@ from argparse import ArgumentParser
 import numpy as np
 from pylearn2.config import yaml_parse
 from pylearn2.gui.patch_viewer import PatchViewer
+from pylearn2.utils import serial
 import theano
 
 from adversarial import sampler, util
@@ -44,9 +45,9 @@ y_sample = dataset.y[ids]
 # Generate from the fetched conditional data
 conditional_data = y_sample.repeat(m, axis=0)
 
-conditional_batch = generator.condition_space.make_theano_batch()
+conditional_batch = model.generator.condition_space.make_theano_batch()
 topo_sample_f = theano.function([conditional_batch],
-                                generator.sample(conditional_batch))
+                                model.generator.sample(conditional_batch))
 topo_samples = topo_sample_f(conditional_data).swapaxes(0, 3)
 
 pv = PatchViewer(grid_shape=(m + 1, n), patch_shape=(32,32),

@@ -82,6 +82,14 @@ def get_valid(ds, limit_size = -1, fold = 0):
     elif ds == 'tfd':
         data = TFD('valid', fold = fold, scale=True)
         return data.X
+    elif ds == 'lfwcrop':
+        # HACK
+        return LFW(axes=('c', 0, 1, 'b'),
+                   gcn=55,
+                   lfw_path='/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/faces32',
+                   filelist_path='/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/filelist.dev.ids.txt',
+                   embedding_file='/afs/cs.stanford.edu/u/jgauthie/scr/lfw-lsa/LFW_attributes_30d.npz',
+                   img_shape=(3, 32, 32)).X
     else:
          raise ValueError("Unknow dataset: {}".format(args.dataet))
 
@@ -96,7 +104,8 @@ def get_test(ds, test, fold=0):
         return LFW(axes=test.axes,
                    gcn=test.gcn,
                    lfw_path='/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/faces32',
-                   filelist_path='/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/filelist.test.txt',
+                   filelist_path='/afs/cs.stanford.edu/u/jgauthie/scr/lfwcrop_color/filelist.test.ids.txt',
+                   embedding_file='/afs/cs.stanford.edu/u/jgauthie/scr/lfw-lsa/LFW_attributes_30d.npz',
                    img_shape=test.img_shape)
     else:
         raise ValueError("Unknow dataset: {}".format(args.dataet))
@@ -106,7 +115,7 @@ def main():
     parser = argparse.ArgumentParser(description = 'Parzen window, log-likelihood estimator')
     parser.add_argument('-p', '--path', help='model path')
     parser.add_argument('-s', '--sigma', default = None)
-    parser.add_argument('-d', '--dataset', choices=['mnist', 'tfd'])
+    parser.add_argument('-d', '--dataset', choices=['mnist', 'tfd', 'lfwcrop'])
     parser.add_argument('-f', '--fold', default = 0, type=int)
     parser.add_argument('-v', '--valid', default = False, action='store_true')
     parser.add_argument('-n', '--num_samples', default=10000, type=int)
@@ -145,7 +154,7 @@ def main():
     else:
         sigma = float(args.sigma)
 
-    print "Using Sigma: {}".format(sigma)
+    print "Using Sigma: %f" % sigma
     gc.collect()
 
     # fit and evaulate
@@ -153,14 +162,14 @@ def main():
     ll = get_nll(test.X, parzen, batch_size = batch_size)
     se = ll.std() / numpy.sqrt(test.X.shape[0])
 
-    print "Log-Likelihood of test set = {}, se: {}".format(ll.mean(), se)
+    print "Log-Likelihood of test set = %f, se: %f" % (ll.mean(), se)
 
     # valid
     if args.valid:
         valid = get_valid(args.dataset)
         ll = get_nll(valid, parzen, batch_size = batch_size)
-        se = ll.std() / numpy.sqrt(val.shape[0])
-        print "Log-Likelihood of valid set = {}, se: {}".format(ll.mean(), se)
+        se = ll.std() / numpy.sqrt(valid.shape[0])
+        print "Log-Likelihood of valid set = %f, se: %f" % (ll.mean(), se)
 
 
 if __name__ == "__main__":

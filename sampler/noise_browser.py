@@ -37,7 +37,7 @@ m, n = 19, 10
 generator = util.load_generator_from_file(args.model_path)
 
 
-base_conditional_data = args.conditional_sampler(generator, 1, n)
+base_conditional_data = args.conditional_sampler(generator, n, 1)
 base_noise_data = generator.get_noise((n, generator.noise_dim))
 
 # Build `m * n` grid of conditional data + noise data, where rows are
@@ -66,11 +66,17 @@ topo_sample_f = theano.function([noise_batch, conditional_batch],
 topo_samples = topo_sample_f(noise_data, conditional_data_noised).swapaxes(0, 3)
 # TODO add final row of unmodified images
 
-pv = PatchViewer(grid_shape=(m, n), patch_shape=(32,32),
+pv = PatchViewer(grid_shape=(m + 1, n), patch_shape=(32,32),
                  is_color=True)
 
 for i in xrange(topo_samples.shape[0]):
     topo_sample = topo_samples[i, :, :, :]
     pv.add_patch(topo_sample)
+
+untouched_samples = topo_sample_f(noise_data[:n], conditional_data[0, :, :].reshape((n, condition_dim))).swapaxes(0, 3)
+for sample in untouched_samples:
+    pv.add_patch(sample)
+
+np.save('conditional_noise', conditional_noise[:, 0, :].reshape((m, condition_dim)))
 
 pv.show()

@@ -25,7 +25,7 @@ def get_nll(x, parzen, batch_size=10):
     nlls = []
     for i in range(n_batches):
         begin = time.time()
-        nll = parzen(x[inds[i::n_batches]])
+        nll = parzen(x[inds[i:i + batch_size]])
         end = time.time()
         times.append(end-begin)
         nlls.extend(nll)

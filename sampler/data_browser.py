@@ -43,7 +43,8 @@ X_sample = dataset.X[ids]
 y_sample = dataset.y[ids]
 
 # Generate from the fetched conditional data
-conditional_data = y_sample.repeat(m, axis=0)
+condition_dim = y_sample.shape[1]
+conditional_data = y_sample.reshape((n, 1, condition_dim)).repeat(m, axis=1).swapaxes(0, 1).reshape((m * n, condition_dim))
 
 conditional_batch = model.generator.condition_space.make_theano_batch()
 topo_sample_f = theano.function([conditional_batch],
@@ -58,7 +59,8 @@ for i in xrange(topo_samples.shape[0]):
     pv.add_patch(topo_sample)
 
 for original_image in X_sample:
-    print original_image.shape
-    pv.add_patch(original_image)
+    print original_image.shape, dataset.axes, dataset.img_shape
+    img = original_image.reshape(32, 32, 3)#(3, 32, 32).swapaxes(0, 2)
+    pv.add_patch(img, activation=1)
 
 pv.show()

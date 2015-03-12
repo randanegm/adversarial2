@@ -26,6 +26,7 @@ parser = ArgumentParser(description=('Demonstrate effects of adding noise '
 parser.add_argument('-s', '--conditional-sampler', default='random',
                     choices=sampler.conditional_samplers.values(),
                     type=lambda k: sampler.conditional_samplers[k])
+parser.add_argument('-e', '--embedding-file')
 parser.add_argument('--conditional-noise-range', default=1.,
                     type=float)
 parser.add_argument('model_path')
@@ -37,7 +38,9 @@ m, n = 19, 10
 generator = util.load_generator_from_file(args.model_path)
 
 
-base_conditional_data = args.conditional_sampler(generator, n, 1)
+base_conditional_data = args.conditional_sampler(generator, n, 1,
+                                                 embedding_file=(args.embedding_file if args.embedding_file is not None
+                                                                 else sampler.DEFAULT_EMBEDDING_FILE))
 base_noise_data = generator.get_noise((n, generator.noise_dim))
 
 # Build `m * n` grid of conditional data + noise data, where rows are

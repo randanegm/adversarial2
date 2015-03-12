@@ -27,6 +27,8 @@ parser.add_argument('-s', '--conditional-sampler', default='random',
                     choices=sampler.conditional_samplers.values(),
                     type=lambda k: sampler.conditional_samplers[k])
 parser.add_argument('-e', '--embedding-file')
+parser.add_argument('--conditional-noiser', choices=sampler.noisers.values(),
+                    default='random_uniform', type=lambda k: sampler.noisers[k])
 parser.add_argument('--conditional-noise-range', default=1.,
                     type=float)
 parser.add_argument('model_path')
@@ -50,8 +52,8 @@ conditional_data = base_conditional_data.reshape((1, n, condition_dim)).repeat(m
 noise_data = base_noise_data.reshape((1, n, generator.noise_dim)).repeat(m, axis=0).eval()
 
 # Build `m * n` grid of condition noise, where columns are identical
-conditional_noise = args.conditional_noise_range * ((np.random.rand(m, 1, condition_dim) * 2. - 1.)
-                                                     .astype(base_conditional_data.dtype))
+conditional_noise = (args.conditional_noiser(m, condition_dim, range=args.conditional_noise_range)
+                         .astype(base_conditional_data.dtype).reshape(m, 1, condition_dim))
 conditional_noise = conditional_noise.repeat(n, axis=1)
 
 # Noise up conditional data

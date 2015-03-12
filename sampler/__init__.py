@@ -23,6 +23,34 @@ def get_embeddings(file, n):
     return source_points, dim
 
 
+def get_noise_random_uniform(m, n, range=1, **kwargs):
+    """
+    Sample a random noise `m * n` matrix where each cell is distributed
+    Unif(-range, range)."""
+
+    return range * (np.random.rand(m, n) * 2. - 1.)
+
+
+def get_noise_random_uniform_oneaxis(m, n, range=1, **kwargs):
+    """
+    Sample a random noise `m * n` matrix, where each row has exactly one
+    nonzero value, and this value is sampled independently from
+    Unif(-range, range).
+    """
+
+    ret = np.zeros((m, n))
+    ret[xrange(m), np.random.choice(n, m)] = range * (np.random.rand(m) * 2. - 1.)
+    return ret
+
+
+# Build string mapping for noisers so that they can be triggered from
+# CLI
+noisers = {
+    'random_uniform': get_noise_random_uniform,
+    'random_uniform_oneaxis': get_noise_random_uniform_oneaxis,
+}
+
+
 def sample_conditional_random(generator, m, n, **kwargs):
     """
     Sample `m * n` points from condition space completely randomly.

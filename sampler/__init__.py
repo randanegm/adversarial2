@@ -23,7 +23,7 @@ def get_embeddings(file, n):
     return source_points, dim
 
 
-def sample_conditional_random(generator, m, n):
+def sample_conditional_random(generator, m, n, **kwargs):
     """
     Sample `m * n` points from condition space completely randomly.
     """
@@ -32,7 +32,7 @@ def sample_conditional_random(generator, m, n):
 
 
 
-def sample_conditional_fix_random(generator, m, n, noise_range=1):
+def sample_conditional_fix_random(generator, m, n, noise_range=1, **kwargs):
     """
     Sample `m * n` points in condition space by sampling `m` points
     and adding small random noise `n` times for each point.
@@ -48,7 +48,8 @@ def sample_conditional_fix_random(generator, m, n, noise_range=1):
 
 
 def sample_conditional_fix_embeddings_no_noise(generator, m, n,
-                                               embedding_file=DEFAULT_EMBEDDING_FILE):
+                                               embedding_file=DEFAULT_EMBEDDING_FILE,
+                                               **kwargs):
     """
     Sample `m * n` points in condition space by retrieving `m` points
     from a provided dataset and repeating each `n` times.
@@ -62,7 +63,7 @@ def sample_conditional_fix_embeddings_no_noise(generator, m, n,
 
 def sample_conditional_fix_embeddings(generator, m, n,
                                       embedding_file=DEFAULT_EMBEDDING_FILE,
-                                      noise_range=1):
+                                      noise_range=1, **kwargs):
     """
     Sample `m * n` points in condition space by retrieving `m` points
     from a provided dataset and adding small random noise `n - 1` times
@@ -90,12 +91,14 @@ conditional_samplers = {
 }
 
 
-def get_conditional_topo_samples(generator, m, n, condition_sampler_fn):
+def get_conditional_topo_samples(generator, m, n, condition_sampler_fn,
+                                 embedding_file=DEFAULT_EMBEDDING_FILE):
     if isinstance(generator, basestring):
         generator = load_generator_from_file(generator)
 
     conditional_batch = generator.condition_space.make_theano_batch()
-    conditional_data = condition_sampler_fn(generator, m, n)
+    conditional_data = condition_sampler_fn(generator, m, n,
+                                            embedding_file=embedding_file)
 
     topo_samples_batch = generator.sample(conditional_batch)
     topo_sample_f = theano.function([conditional_batch], topo_samples_batch)

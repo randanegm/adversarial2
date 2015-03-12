@@ -11,13 +11,16 @@ parser = ArgumentParser(description=('Sample images from the generative componen
 parser.add_argument('-s', '--conditional-sampler', default='fix_random',
                     choices=sampler.conditional_samplers.values(),
                     type=lambda k: sampler.conditional_samplers[k])
+parser.add_argument('-e', '--embedding-file')
 parser.add_argument('model_path')
 args = parser.parse_args()
 
 
 m, n = 4, 5
 topo_samples, _ = sampler.get_conditional_topo_samples(args.model_path, m, n,
-                                                       args.conditional_sampler)
+                                                       args.conditional_sampler,
+                                                       embedding_file=(args.embedding_file if args.embedding_file is not None
+                                                                       else sampler.DEFAULT_EMBEDDING_FILE))
 
 pv = PatchViewer(grid_shape=(m, n), patch_shape=(32,32),
                  is_color=True)

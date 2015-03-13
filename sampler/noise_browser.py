@@ -12,6 +12,7 @@ vectors to sample and `n` is the number of images on which to try each out.
 """
 
 from argparse import ArgumentParser
+import pprint
 
 import numpy as np
 from pylearn2.gui.patch_viewer import PatchViewer
@@ -54,6 +55,7 @@ noise_data = base_noise_data.reshape((1, n, generator.noise_dim)).repeat(m, axis
 # Build `m * n` grid of condition noise, where columns are identical
 conditional_noise = (args.conditional_noiser(m, condition_dim, range=args.conditional_noise_range)
                          .astype(base_conditional_data.dtype).reshape(m, 1, condition_dim))
+pprint.pprint(zip(np.nonzero(conditional_noise)[2], conditional_noise[np.nonzero(conditional_noise)]))
 conditional_noise = conditional_noise.repeat(n, axis=1)
 
 # Noise up conditional data
@@ -69,7 +71,6 @@ conditional_batch = generator.condition_space.make_theano_batch()
 topo_sample_f = theano.function([noise_batch, conditional_batch],
                                 generator.dropout_fprop((noise_batch, conditional_batch))[0])
 topo_samples = topo_sample_f(noise_data, conditional_data_noised).swapaxes(0, 3)
-# TODO add final row of unmodified images
 
 pv = PatchViewer(grid_shape=(m + 1, n), patch_shape=(32,32),
                  is_color=True)
@@ -80,7 +81,7 @@ for i in xrange(topo_samples.shape[0]):
 
 untouched_samples = topo_sample_f(noise_data[:n], conditional_data[0, :, :].reshape((n, condition_dim))).swapaxes(0, 3)
 for sample in untouched_samples:
-    pv.add_patch(sample)
+    pv.add_patch(sample, activation=1)
 
 np.save('conditional_noise', conditional_noise[:, 0, :].reshape((m, condition_dim)))
 

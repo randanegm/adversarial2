@@ -43,11 +43,26 @@ def get_noise_random_uniform_oneaxis(m, n, range=1, **kwargs):
     return ret
 
 
+def get_noise_consistent_uniform_oneaxis(m, n, range=1, **kwargs):
+    """
+    For each axis, sample a random noise value `a_i` and add for that
+    axis only. Requires `m == n`.
+    """
+
+    assert m == n, 'Requires square matrix'
+
+    rands = range * (np.random.rand(m) * 2. - 1.)
+    mat = rands * np.eye(m)
+
+    return mat
+
+
 # Build string mapping for noisers so that they can be triggered from
 # CLI
 noisers = {
     'random_uniform': get_noise_random_uniform,
     'random_uniform_oneaxis': get_noise_random_uniform_oneaxis,
+    'consistent_uniform_oneaxis': get_noise_consistent_uniform_oneaxis,
 }
 
 

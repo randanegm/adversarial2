@@ -36,7 +36,7 @@ parser.add_argument('model_path')
 args = parser.parse_args()
 
 
-m, n = 19, 10
+m, n = 14, 10
 
 generator = util.load_generator_from_file(args.model_path)
 

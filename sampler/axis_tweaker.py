@@ -25,7 +25,7 @@ args = parser.parse_args()
 embeddings = np.load(args.embedding_file)['arr_0']
 
 condition_dim = embeddings.shape[1]
-n = 10
+m, n = condition_dim, 10
 
 condition_data = []
 condition_data_mod = []
@@ -33,7 +33,7 @@ condition_data_mod = []
 # Find embeddings which have minimal values for each axis, and invert the
 # minimal values
 for dim in range(condition_dim):
-    min_embs = embeddings.sort(axis=dim)[:n]
+    min_embs = embeddings[embeddings[:, dim].argsort()[:n]]
 
     # Save unmodified form
     condition_data.extend(min_embs.copy())
@@ -49,6 +49,8 @@ conditional_batch = generator.condition_space.make_theano_batch()
 topo_sample_f = theano.function([conditional_batch],
                                 generator.sample(conditional_batch))
 
+condition_data = np.array(condition_data, dtype=theano.config.floatX)
+condition_data_mod = np.array(condition_data_mod, dtype=theano.config.floatX)
 samples_orig = topo_sample_f(condition_data).swapaxes(0, 3)
 samples_mod = topo_sample_f(condition_data_mod).swapaxes(0, 3)
 

@@ -15,9 +15,8 @@ DEFAULT_EMBEDDING_FILE = '/afs/cs.stanford.edu/u/jgauthie/scr/lfw-lsa/LFW_attrib
 
 def get_embeddings(file, n):
     embs = np.load(file)['arr_0']
-    np.random.shuffle(embs)
 
-    source_points = embs[:n].copy()
+    source_points = embs[np.random.choice(embs.shape[0], size=n)].copy()
     dim = source_points.shape[1]
 
     return source_points, dim

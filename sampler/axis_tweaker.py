@@ -42,17 +42,25 @@ for dim in range(condition_dim):
     min_embs[range(n), dim] *= -1
     condition_data_mod.extend(min_embs)
 
+condition_data = np.array(condition_data, dtype=theano.config.floatX)
+condition_data_mod = np.array(condition_data_mod, dtype=theano.config.floatX)
+
 
 # Now prepare generator
 generator = util.load_generator_from_file(args.model_path)
+noise_batch = generator.noise_space.make_theano_batch()
 conditional_batch = generator.condition_space.make_theano_batch()
-topo_sample_f = theano.function([conditional_batch],
-                                generator.sample(conditional_batch))
+topo_sample_f = theano.function([noise_batch, conditional_batch],
+                                generator.dropout_fprop((noise_batch, conditional_batch))[0])
 
-condition_data = np.array(condition_data, dtype=theano.config.floatX)
-condition_data_mod = np.array(condition_data_mod, dtype=theano.config.floatX)
-samples_orig = topo_sample_f(condition_data).swapaxes(0, 3)
-samples_mod = topo_sample_f(condition_data_mod).swapaxes(0, 3)
+
+# Sample some noise data -- this needs to be shared between orig and mod
+# sample pairs
+noise_data = generator.get_noise((2 * m * n, generator.noise_dim)).eval()
+
+
+samples_orig = topo_sample_f(noise_data, condition_data).swapaxes(0, 3)
+samples_mod = topo_sample_f(noise_data, condition_data_mod).swapaxes(0, 3)
 
 pv = PatchViewer(grid_shape=(2 * m, n), patch_shape=(32,32),
                  is_color=True)

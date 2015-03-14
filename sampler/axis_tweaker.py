@@ -39,7 +39,10 @@ for dim in range(condition_dim):
     condition_data.extend(min_embs.copy())
 
     print 'Minimal values for axis', dim, ': ', min_embs[range(n), dim]
-    min_embs[range(n), dim] *= -1
+    new_val = embeddings[:, dim].max()
+    print '\tReplacing with:', new_val
+
+    min_embs[range(n), dim] *= new_val
     condition_data_mod.extend(min_embs)
 
 condition_data = np.array(condition_data, dtype=theano.config.floatX)
@@ -56,7 +59,7 @@ topo_sample_f = theano.function([noise_batch, conditional_batch],
 
 # Sample some noise data -- this needs to be shared between orig and mod
 # sample pairs
-noise_data = generator.get_noise((2 * m * n, generator.noise_dim)).eval()
+noise_data = generator.get_noise((m * n, generator.noise_dim)).eval()
 
 
 samples_orig = topo_sample_f(noise_data, condition_data).swapaxes(0, 3)

@@ -1,7 +1,9 @@
 from argparse import ArgumentParser
 
+import numpy as np
 from pylearn2.config import yaml_parse
 from pylearn2.gui.patch_viewer import PatchViewer
+from pylearn2.utils import serial
 
 from adversarial import sampler
 

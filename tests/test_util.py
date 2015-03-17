@@ -17,8 +17,9 @@ def test_identity_layer():
     f = theano.function([X], mlp.fprop(X))
 
     for _ in range(5):
-        X = np.random.rand(10, nvis)
+        X = np.random.rand(10, nvis).astype(theano.config.floatX)
         yield _test_identity_layer, f, X
+
 
 def _test_identity_layer(mlp_fun, X):
     assert_array_almost_equal(mlp_fun(X), X)

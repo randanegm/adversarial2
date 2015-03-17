@@ -14,7 +14,6 @@ from pylearn2.space import Conv2DSpace
 from pylearn2.models.mlp import MLP
 from pylearn2.models.maxout import MaxoutConvC01B
 from pylearn2.gui import patch_viewer
-import ipdb
 
 
 input_space = Conv2DSpace(shape = (28, 28), num_channels=1, axes = ('c', 0, 1, 'b'))

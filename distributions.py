@@ -10,7 +10,7 @@ from theano.tensor.shared_randomstreams import RandomStreams
 
 
 class Distribution(object):
-    def get_space__init__(self, space):
+    def __init__(self, space):
         self.space = space
 
     def get_space(self):

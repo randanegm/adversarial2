@@ -11,13 +11,13 @@ from adversarial.rnn import GenerativeRecurrentMLP
 def test_rnn_generator():
     # hidden->hidden nested MLP
     hidden_mlp = MLP(layer_name='hidden->hidden',
-                     layers=[Tanh(layer_name='hidden->hidden_tanh', irange=0., dim=1)])
+                     layers=[Tanh(layer_name='hidden->hidden_tanh', irange=1., dim=1)])
 
 
 
     # hidden->output nested MLP
     output_mlp = MLP(layer_name='hidden->output',
-                     layers=[Tanh(layer_name='hidden->output_tanh', irange=0., dim=1)])
+                     layers=[Tanh(layer_name='hidden->output_tanh', irange=1., dim=1)])
 
     n_steps = 10
     generator = GenerativeRecurrentMLP(input_space=VectorSpace(dim=1),
@@ -35,7 +35,7 @@ def test_rnn_generator():
     inp = T.matrix()
     f = theano.function([inp], generator.fprop(inp))
 
-    outputs, hiddens = f(np.ones((1, 1)))
+    outputs, hiddens, idxs = f(np.ones((1, 1)))
 
     expected_hiddens = []
     x = np.tanh(2)

@@ -78,20 +78,22 @@ class GenerativeRecurrentMLP(MLP):
         state_start = T.dot(state_below, W)
 
         # Now scan!
+        chosen_idxs = T.zeros((state_below.shape[0],), dtype='int64')
         z, updates = theano.scan(fn=self.fprop_step,
-                                 outputs_info=(state_below, state_start),
+                                 outputs_info=(state_below, state_start, chosen_idxs),
                                  n_steps=self.max_steps)
 
         self._scan_updates.update(updates)
         return z
 
-    def fprop_step(self, state_below, state_before):
+    def fprop_step(self, state_below, state_before, best_idxs_acc):
         new_hidden = self.hidden_mlp.fprop((state_below, state_before))
         output = self.output_mlp.fprop(new_hidden)
 
         # Fetch new embedding
         # softmax_out = self.softmax.fprop(output)
         # print softmax_out, softmax_out.dtype, T.argmax(softmax_out)
-        new_input = self.E[T.argmax(output, axis=0)]
+        best_idxs = T.argmax(output, axis=0)
+        new_input = self.E[best_idxs]
 
-        return new_input, new_hidden
+        return new_input, new_hidden, best_idxs

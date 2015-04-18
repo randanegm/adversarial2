@@ -20,6 +20,10 @@ class GenerativeRecurrentMLP(MLP):
         self.max_steps = max_steps
         self._scan_updates = OrderedDict()
 
+        # Create new EOS class
+        self.eos_id = num_classes
+        num_classes += 1
+
         self.irange = irange
         self.num_classes = num_classes
         self.emb_dim = input_space.dim
@@ -78,22 +82,33 @@ class GenerativeRecurrentMLP(MLP):
         state_start = T.dot(state_below, W)
 
         # Now scan!
-        chosen_idxs = T.zeros((state_below.shape[0],), dtype='int64')
+        finished = T.ones((state_below.shape[0],), dtype='int8')
+        softmax_data = T.zeros((state_below.shape[0], self.num_classes), dtype=theano.config.floatX)
         z, updates = theano.scan(fn=self.fprop_step,
-                                 outputs_info=(state_below, state_start, chosen_idxs),
+                                 outputs_info=(state_below, state_start, softmax_data, finished),
                                  n_steps=self.max_steps)
 
+        # Pass on updates from scan operation
         self._scan_updates.update(updates)
-        return z
 
-    def fprop_step(self, state_below, state_before, best_idxs_acc):
+        # Build return value
+        ret_outputs, ret_hiddens, ret_softmaxes, _ = z
+        return ret_outputs, ret_hiddens, ret_softmaxes
+
+    def fprop_step(self, state_below, state_before, softmax_data_acc, finished_acc):
         new_hidden = self.hidden_mlp.fprop((state_below, state_before))
         output = self.output_mlp.fprop(new_hidden)
 
-        # Fetch new embedding
-        # softmax_out = self.softmax.fprop(output)
-        # print softmax_out, softmax_out.dtype, T.argmax(softmax_out)
+        # Calculate next input values
+        softmax_data = self.softmax.fprop(output)
         best_idxs = T.argmax(output, axis=0)
+        best_idxs = T.switch(T.eq(finished_acc, 1), self.eos_id, best_idxs)
+
+        # Fetch embeddings
         new_input = self.E[best_idxs]
 
-        return new_input, new_hidden, best_idxs
+        # Check for EOS emissions and update our knowledge of which batch is finished
+        finished_acc = T.eq(best_idxs, self.eos_id)
+        all_finished = T.neq(finished_acc.min(), 0)
+
+        return (new_input, new_hidden, softmax_data, finished_acc)#, theano.scan_module.until(all_finished)

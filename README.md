@@ -20,9 +20,9 @@ Yoshua Bengio. ArXiv 2014.
 
 This code is built on the [Pylearn2][4] framework for machine learning.
 The abstract model structures are implemented as Python classes (see e.g.
-the [`Generator` class][5], and concrete model instantiations / training
-configurations are described in YAML files (see e.g. [a file for training
-with LFW data][6]).
+the [`ConditionalAdversaryPair` class][5], and concrete model
+instantiations / training configurations are described in YAML files
+(see e.g. [a file for training with LFW data][6]).
 
 You can perform your own training runs using these YAML files. The paths in
 the YAML files reference my own local data; you'll need to download the LFW
@@ -54,7 +54,7 @@ source files for descriptions).
 [2]: https://github.com/goodfeli/adversarial
 [3]: http://arxiv.org/abs/1406.2661
 [4]: http://deeplearning.net/software/pylearn2/
-[5]: https://github.com/hans/adversarial/blob/master/__init__.py#L134
+[5]: https://github.com/hans/adversarial/blob/master/conditional/__init__.py#L13
 [6]: https://github.com/hans/adversarial/blob/master/models/lfwcrop_convolutional_conditional_retrain.yaml
 [7]: https://github.com/hans/adversarial/tree/master/data/lfwcrop_color
 [8]: https://github.com/hans/adversarial/blob/master/sampler/noise_browser.py
